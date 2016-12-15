@@ -1,0 +1,1 @@
+These DCL files are taken from the products of the ConcatenateBM40 project, which concatenates only BM-40 related data out of a collection of ACQ files. 

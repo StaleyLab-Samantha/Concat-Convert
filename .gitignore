@@ -1,0 +1,8 @@
+*.acq
+*.dcl
+*.dclt
+*.dclu
+file_names.txt
+*.dll
+*.h
+*.lib
