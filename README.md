@@ -18,11 +18,11 @@ In the command prompt window, navigate to `Concat-Convert\Debug` (the directory 
 
 Run the executable: `Concat-Convert.exe` (no additional arguments necessary). 
 
-**(3) The script will prompt you for the path where the ACQ files are located. (This script will ignore your input here, as ACQ files from a user-selectable directory is not working yet!) **
+**(3) The script will prompt you for the path where the ACQ files are located. (This script will ignore your input here, as ACQ files from a user-selectable directory is not working yet!)**
 
 Regardless, the ACQ files are located at `Concat-Convert\Debug` if you're following these instructions, so you might as well enter this when prompted.
 
-**(4) The script will then prompt you for the path where you would like the DCL files to be created. The script WILL use this input. Select a path where you would like the DCL files to be created. I chose `Concat-Convert\Debug\dcl_files`. **
+**(4) The script will then prompt you for the path where you would like the DCL files to be created. The script WILL use this input. Select a path where you would like the DCL files to be created. I chose `Concat-Convert\Debug\dcl_files`.**
 
 **(5) Wait for the files to be created in the directory. This will take a long time – about 1 minute per 8-hours of data per animal. It could be hours, depending on how much data you are concatenating.**
 
