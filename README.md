@@ -1,8 +1,8 @@
 # Concat-Convert
 
-A project that, given a set of .ACQ EEG recordings, will create .DCL files such that one animal's data is temporally-concatenated into a single file. This is a Visual Studio 2012 project.
+A project that, given a set of `.ACQ` EEG recordings, will create `.DCL` files such that one animal's data is temporally-concatenated into a single file. This is a Visual Studio 2012 project.
 
-The result: One .DCL file for every animal present in the set of .ACQ files. Each .DCL file will contain 2 channels (ie. the left- and right-channel data for each animal). 
+The result: One `.DCL` file for every animal present in the set of `.ACQ` files. Each `.DCL` file will contain 2 channels (ie. the left- and right-channel data for each animal). 
 
 # How to Run
 
