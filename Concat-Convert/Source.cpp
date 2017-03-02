@@ -201,7 +201,7 @@ std::vector<std::string> listAnimals(std::vector<std::string> &fnames) {
 	//for each file in current folder
 	for(int i = 0; i < fnames.size(); i++) {
 		fname_str = fnames.at(i);
-		std::cout << "Filename: " << fname_str << std::endl;
+		//std::cout << "Filename: " << fname_str << std::endl;
 		fname_w = stringToWchar(fname_str);					
 
 		//open the file
@@ -447,6 +447,9 @@ int main(int argc, char* argv[]) {
 
 	std::string fname_str;
 	wchar_t *fname_w;
+
+	std::string fname_animal_str;
+	wchar_t *fname_animal_w;
 	
 	ACQFile acqFile;
 	std::fstream dclFile;
@@ -488,17 +491,28 @@ int main(int argc, char* argv[]) {
 	////THIS VERSION WORKS
 	std::vector<std::string> fnames = listACQFiles();//ACQFilePath, currentPath);
 	for(int i = 0; i < fnames.size(); i++) {
-		std::cout << "FILE NAMES: " << fnames.at(i) << std::endl;
+		std::cout << "FNAMES: " << fnames.at(i) << std::endl;
 	}
 
 	std::vector<std::string> filesToRemove;
 	std::vector<std::string> animals = listAnimals(fnames);		//obtain a list of animals in the ACQ files
 	std::string currentAnimal;
 
+	std::vector<std::string> fnames_animal;
+
 
 	//for each animal in the ACQ files
 	for(int k = 0; k < animals.size(); k++) {
 		currentAnimal = animals.at(k);
+
+		//create a copy of fnames specific to that animal, fnames_animal
+		std::vector<std::string> fnames_animal(fnames);
+		filesToRemove.clear();
+
+		for(int i = 0; i < fnames_animal.size(); i++) {
+			std::cout << "FNAMES_ANIMAL: " << fnames_animal.at(i) << std::endl;
+		}
+
 
 		//for each filename...
 		for(int i = 0; i < fnames.size(); i++) {
@@ -507,11 +521,14 @@ int main(int argc, char* argv[]) {
 			fname_w = stringToWchar(fname_str);					
 			//const wchar_t* fname_w = L"IctalLikeExample.acq";
 
+/*			fname_animal_str = fnames_animal.at(i);
+			fname_animal_w = stringToWchar(fname_animal_str);*/					
+
 			//open the file
 			if(initACQFile(fname_w, &acqFile))	{
 				//std::cout << "\tAre we getting here?" << std::endl;
 
-				std::cout << "\tCurrent ACQ file: " << fname_str << std::endl;	
+				//std::cout << "\tCurrent ACQ file: " << fname_str << std::endl;	
 
 				channelsCount = acqFile.numChannels;
 				scanFreq = 1000.0/acqFile.sampleRate;		 			//Conversion from msec/sample to samples/sec (Hz).
@@ -531,15 +548,15 @@ int main(int argc, char* argv[]) {
 					if((strChannelName.compare(currentAnimal + "(l)") == 0) || (strChannelName.compare(currentAnimal + "(r)") == 0)) {
 						bm_flag = true;									//set flag to true
 						numDataPoints += numSamples;					//total data points = sum of all channels' data points
-						std::cout << "Adding to list: " << numDataPoints << std::endl;
+						//std::cout << "Adding to list: " << numDataPoints << std::endl;
 					}
-					std::cout << "\t" << strChannelName << std::endl;
+					//std::cout << "\t" << strChannelName << std::endl;
 				}
 
 				//if this file does not have a channel representing animal BM, remove from list
 				if(!bm_flag) {
 					//what file are we erasing?
-					std::cout << "Erasing: " << fname_str << std::endl;
+					//std::cout << "Erasing: " << fname_str << std::endl;
 					filesToRemove.push_back(fname_str);
 					//fnames.erase(std::remove(fnames.begin(), fnames.end(), fname_str), fnames.end());
 				}
@@ -553,23 +570,27 @@ int main(int argc, char* argv[]) {
 		}
 
 		std::string toRemove;
-		//removing files that don't have BM-40
+		//removing files that don't have BM-whatever
 		for(int i = 0; i < filesToRemove.size(); i++) {
 			toRemove = filesToRemove.at(i);
-			fnames.erase(std::remove(fnames.begin(), fnames.end(), toRemove), fnames.end());
+			fnames_animal.erase(std::remove(fnames_animal.begin(), fnames_animal.end(), toRemove), fnames_animal.end());
 
 		}
 
 
-		std::cout << "AFTER REMOVAL: " << std::endl;
-		for(int i = 0; i < fnames.size(); i++) {
-			fname_str = fnames.at(i);
-			std::cout << "\tRemaining: " << fname_str << std::endl;
-			fname_w = stringToWchar(fname_str);	
+		std::cout << "FNAMES_ANIMAL AFTER REMOVAL: " << std::endl;
+		for(int i = 0; i < fnames_animal.size(); i++) {
+			fname_animal_str = fnames_animal.at(i);
+			std::cout << "\tFNAMES_ANIMAL Remaining: " << fname_animal_str << std::endl;
+			fname_animal_w = stringToWchar(fname_animal_str);	
 		}
-		std::cout << "DONE PRINTING: " << std::endl;
+		//std::cout << "DONE PRINTING: " << std::endl;
 
 	
+		for(int i = 0; i < fnames.size(); i++) {
+			std::cout << "FNAMES AFTER REMOVAL: " << fnames.at(i) << std::endl;
+		}
+		std::cout << "---------------\n\n " << std::endl;
 
 		//std::cout << "Scan Frequency Outside Loop: " << scanFreq << std::endl;
 		//std::cout << "Num Data Points Outside Loop: " << numDataPoints << std::endl;
@@ -591,13 +612,13 @@ int main(int argc, char* argv[]) {
 		int chindex_right;
 
 		//for each of the filenames containing BM animal data...
-		for(int i = 0; i < fnames.size(); i++) {
-			fname_str = fnames.at(i);
-			std::cout << "Current filename: " << fname_str << std::endl;
-			fname_w = stringToWchar(fname_str);
+		for(int i = 0; i < fnames_animal.size(); i++) {
+			fname_animal_str = fnames_animal.at(i);
+			std::cout << "Current filename: " << fname_animal_str << std::endl;
+			fname_animal_w = stringToWchar(fname_animal_str);
 
 			//open file
-			if(initACQFile(fname_w, &acqFile)) {
+			if(initACQFile(fname_animal_w, &acqFile)) {
 
 				//for each channel in file, search for BM-40 left/right.
 				for(int j = 0; j < acqFile.numChannels; j++) {
