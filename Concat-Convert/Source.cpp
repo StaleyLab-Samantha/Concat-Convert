@@ -477,17 +477,11 @@ int main(int argc, char* argv[]) {
 	std::getline(std::cin, DCLFilePath);
 	std::cout << "PATH PROVIDED: " << DCLFilePath << "\n" << std::endl;
 
-
-
-
-
-
-
-	//THIS VERSION DOESN'T WORK
-	//std::vector<std::string> fnames = listACQFilesDir(ACQFilePath);
-	//for(int i = 0; i < fnames.size(); i++) {
-	//	std::cout << "FILE NAMES: " << fnames.at(i) << std::endl;
-	//}
+		//THIS VERSION DOESN'T WORK
+		//std::vector<std::string> fnames = listACQFilesDir(ACQFilePath);
+		//for(int i = 0; i < fnames.size(); i++) {
+		//	std::cout << "FILE NAMES: " << fnames.at(i) << std::endl;
+		//}
 
 	std::cout << "\n\n\n" << std::endl;
 
@@ -497,14 +491,8 @@ int main(int argc, char* argv[]) {
 		std::cout << "FILE NAMES: " << fnames.at(i) << std::endl;
 	}
 
-
-
-
 	std::vector<std::string> filesToRemove;
-
-	//obtain a list of animals in the ACQ files
-	std::vector<std::string> animals = listAnimals(fnames);
-
+	std::vector<std::string> animals = listAnimals(fnames);		//obtain a list of animals in the ACQ files
 	std::string currentAnimal;
 
 
