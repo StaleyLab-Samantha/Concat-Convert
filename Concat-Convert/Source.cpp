@@ -41,23 +41,25 @@
 	Returns:
 		a string containing the path to the currently-executing program. 
 */
-std::string ExePath() {
-    char buffer[MAX_PATH];
-    GetModuleFileNameA( NULL, buffer, MAX_PATH );
-    std::string::size_type pos = std::string( buffer ).find_last_of( "\\/" );
-    return std::string( buffer ).substr( 0, pos);
-}
+//std::string ExePath() {
+//    char buffer[MAX_PATH];
+//    GetModuleFileNameA( NULL, buffer, MAX_PATH );
+//    std::string::size_type pos = std::string( buffer ).find_last_of( "\\/" );
+//    return std::string( buffer ).substr( 0, pos);
+//}
 
 
 
 
 /*
 	Compiles a list of ACQ files in the current directory (full name), 
-	sorted in alphabetical order. Because files are named according to the date of their creation, 
+	sorted in alphabetical order. 
+	
+	Because files are named according to the date of their creation, 
 	alphabetical order = chronological order.
+	EDIT 3-6-2017: NOT ALWAYS TRUE. Work with Windows' "Last Modified" time. 
 
-	NOTE: Using this function causes the program to fail around line 550, copied below:
-		> std::cout << "Adding to list: " << numDataPoints << std::endl;
+	NOTE: When using this function, error occurs at return! Not sure why...
 	Both listACQFilesDir() and listACQFiles() do (and should) have the same output for a given path. 
 	
 	It is unclear why the program fails well after the function call when listACQFilesDir() is used, 
@@ -65,31 +67,39 @@ std::string ExePath() {
 
 	Returns: a vector<string> containing filenames, with the full absolute path. 
 */
-std::vector<std::string> listACQFilesDir(std::string ACQFilePath) {
-	HANDLE hFind;
-	WIN32_FIND_DATAA data;
-
-	std::string line;
-	std::vector<std::string> files;
-
-	std::string searchFor = ACQFilePath + "\\*.acq";
-
-	char* charSearch = new char;
-	std::strcpy(charSearch, searchFor.c_str());
-
-	hFind = FindFirstFileA(charSearch, &data);
-	if (hFind != INVALID_HANDLE_VALUE) {
-		do {
-			line = ACQFilePath + "\\" + data.cFileName;
-			//printf("%s\n", line);
-			files.push_back(line);
-		} while (FindNextFileA(hFind, &data));
-		FindClose(hFind);
-	}
-
-	return files;
-
-}
+//std::vector<std::string> listACQFilesDir(std::string ACQFilePath) {
+//	HANDLE hFind;
+//	WIN32_FIND_DATAA data;
+//
+//	std::string line;
+//	std::vector<std::string> files;
+//
+//	wchar_t search_w[255];
+//	size_t length;
+//
+//	std::string searchFor = ACQFilePath + "\\*.acq";
+//
+//	//string to char*
+//	char* charSearch = new char;
+//	std::strcpy(charSearch, searchFor.c_str());
+//
+//	////char* to wchar
+//	//length = strlen(charSearch);									//find length of char array
+//	//mbstowcs_s(&length, search_w, charSearch, length);
+//
+//	hFind = FindFirstFileA(charSearch, &data);
+//	if (hFind != INVALID_HANDLE_VALUE) {
+//		do {
+//			line = ACQFilePath + "\\" + data.cFileName;
+//			//printf("%s\n", line);
+//			files.push_back(line);
+//		} while (FindNextFileA(hFind, &data));
+//		FindClose(hFind);
+//	}
+//
+//	return files;
+//
+//}
 
 
 
@@ -98,6 +108,10 @@ std::vector<std::string> listACQFilesDir(std::string ACQFilePath) {
 	Compiles a list of ACQ files in the current directory (full name), 
 	sorted in alphabetical order. Because files are named according to the date of their creation, 
 	alphabetical order = chronological order.
+
+	EDIT 3-6-17: Files are not necessarily named in order of creation! 
+	See sortACQ Files for sorting by last-modified date. 
+	Last-modified date (NOT last-created date) reflects the date of data collection.
 
 	Returns: a vector<string> containing filenames, with the full absolute path. 
 */
@@ -118,6 +132,62 @@ std::vector<std::string> listACQFiles() { //std::string ACQFilePath, std::string
 
 	return files;
 }
+
+
+
+
+/*
+	Sort two pairs by second element of pair.
+*/
+//bool sortBySecond(const std::pair<std::string,FILETIME> &a, const std::pair<std::string,FILETIME> &b)
+//{
+//    return (CompareFileTime(&a.second, &b.second) == -1);
+//}
+
+struct sortBySecond {
+    bool operator()(const std::pair<std::string,FILETIME> &left, const std::pair<std::string,FILETIME> &right) {
+        return (CompareFileTime(&left.second, &right.second) == -1);
+    }
+};
+
+/*
+	Returns sorted list of ACQ files (sorted by last-modified date).
+*/
+std::vector<std::string> sortACQFiles(std::vector<std::string> fnames) { 
+	//using list of names, create vector of pairs and sort by date
+	std::vector<std::pair<std::string, FILETIME> > fnames_times;
+
+	std::vector<std::string> sorted_fnames;
+	HANDLE hFind;
+	WIN32_FIND_DATAA data;
+	std::pair<std::string, FILETIME> file;
+
+	//for each filename in list
+	for(int i = 0; i < fnames.size(); i++) {
+		//first element of pair is filename
+		file.first = fnames[i];
+
+		//second element of pair is last-modified time
+		hFind = FindFirstFileA(fnames[i].c_str(), &data);	//obtain file data, find last-write-time
+		file.second = data.ftLastWriteTime;
+		FindClose(hFind);									//close file
+
+		fnames_times.push_back(file);						//add string-filetime pair to pair-vector
+	}
+
+	//sort pair-vector by filetime
+	std::sort(fnames_times.begin(), fnames_times.end(), sortBySecond());
+
+	//create vector of sorted filenames from pair-vector
+	for(int i=0; i < fnames_times.size(); i++) {
+		sorted_fnames.push_back(fnames_times[i].first);
+	}
+
+	return sorted_fnames;
+}
+
+
+
 
 
 
@@ -489,7 +559,8 @@ int main(int argc, char* argv[]) {
 	std::cout << "\n\n\n" << std::endl;
 
 	////THIS VERSION WORKS
-	std::vector<std::string> fnames = listACQFiles();//ACQFilePath, currentPath);
+	std::vector<std::string> unsorted = listACQFiles();//listACQFilesDir(ACQFilePath);//ACQFilePath, currentPath);
+	std::vector<std::string> fnames = sortACQFiles(unsorted);
 	for(int i = 0; i < fnames.size(); i++) {
 		std::cout << "FNAMES: " << fnames.at(i) << std::endl;
 	}

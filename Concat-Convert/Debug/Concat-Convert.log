@@ -1,23 +1,25 @@
-﻿Build started 3/2/2017 11:55:12 AM.
+﻿Build started 3/6/2017 1:21:20 PM.
      1>Project "C:\Users\sk430\Documents\Concat-Convert\Concat-Convert\Concat-Convert.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
          C:\Program Files\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I"C:\Users\sk430\Documents\BIOPAC Systems, Inc\BIOPAC File API 3.2" /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /wd4996 /analyze- /errorReport:prompt Source.cpp
          Source.cpp
-     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(149): warning C4172: returning address of local variable or temporary
-     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(202): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(294): warning C4101: 'dataStart' : unreferenced local variable
-     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(417): warning C4244: 'initializing' : conversion from 'double' to 'uint16_t', possible loss of data
-     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(418): warning C4244: 'initializing' : conversion from 'double' to 'uint16_t', possible loss of data
-     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(493): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(505): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(512): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(518): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(534): warning C4244: '=' : conversion from 'double' to 'int32_t', possible loss of data
-     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(574): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(582): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(590): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(607): warning C4244: 'initializing' : conversion from 'uint64_t' to 'long', possible loss of data
-     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(615): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(166): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(182): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(219): warning C4172: returning address of local variable or temporary
+     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(272): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(364): warning C4101: 'dataStart' : unreferenced local variable
+     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(487): warning C4244: 'initializing' : conversion from 'double' to 'uint16_t', possible loss of data
+     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(488): warning C4244: 'initializing' : conversion from 'double' to 'uint16_t', possible loss of data
+     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(564): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(576): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(583): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(589): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(605): warning C4244: '=' : conversion from 'double' to 'int32_t', possible loss of data
+     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(645): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(653): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(661): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(678): warning C4244: 'initializing' : conversion from 'uint64_t' to 'long', possible loss of data
+     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(686): warning C4018: '<' : signed/unsigned mismatch
        Link:
          C:\Program Files\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\sk430\Documents\Concat-Convert\Debug\Concat-Convert.exe" /INCREMENTAL /NOLOGO /LIBPATH:"C:\Users\sk430\Documents\BIOPAC Systems, Inc\BIOPAC File API 3.2" acqfile.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\sk430\Documents\Concat-Convert\Debug\Concat-Convert.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\sk430\Documents\Concat-Convert\Debug\Concat-Convert.lib" /MACHINE:X86 Debug\Source.obj
          Concat-Convert.vcxproj -> C:\Users\sk430\Documents\Concat-Convert\Debug\Concat-Convert.exe
@@ -25,4 +27,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:01.74
+Time Elapsed 00:00:04.24
