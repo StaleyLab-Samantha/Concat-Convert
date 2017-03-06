@@ -115,20 +115,108 @@
 
 	Returns: a vector<string> containing filenames, with the full absolute path. 
 */
-std::vector<std::string> listACQFiles() { //std::string ACQFilePath, std::string currentPath) {
-	//obtaining names of all ACQ files in current folder, piping output to text file.
+//std::vector<std::string> listACQFiles() { //std::string ACQFilePath, std::string currentPath) {
+//	//obtaining names of all ACQ files in current folder, piping output to text file.
+//
+//	system( "dir /s /b /a-d /on *.acq > file_names.txt" );						// /b lists file with extension
+//																				// /s provides full absolute path
+//																				// /a-d displays only files, no directories
+//																				// /on displays files in alphabetical order												
+//	std::ifstream filenames("file_names.txt");
+//	std::string line;
+//	std::vector<std::string> files;
+//
+//	//reading text file containing filenames, "file_names.txt"
+//	while(getline(filenames, line))
+//		files.push_back(line);				//filenames to vector of strings
+//
+//	return files;
+//}
 
-	system( "dir /s /b /a-d /on *.acq > file_names.txt" );						// /b lists file with extension
-																				// /s provides full absolute path
-																				// /a-d displays only files, no directories
-																				// /on displays files in alphabetical order												
-	std::ifstream filenames("file_names.txt");
+
+/*
+	Converts an input string to a wchar_t array.
+	Returns: a wchar_t array with the contents of the input string.	
+*/
+wchar_t* stringToWchar(std::string fname_str) {
+	char* fname_char;
+	wchar_t fname_w[255];
+	size_t length;
+
+	//std::cout << "\tString version: " << fname_str << std::endl;
+
+	//string to char*
+	fname_char = new char[fname_str.size() + 1];					//creating new char array
+	std::copy(fname_str.begin(), fname_str.end(), fname_char);		//copying contents of string to char*
+	fname_char[fname_str.size()] = '\0';							//null character at end of char*
+
+	//std::cout << "\tChar version: " << fname_char << std::endl;
+
+	//char* to wchar_t
+	length = strlen(fname_char);									//find length of char array
+	mbstowcs_s(&length, fname_w, fname_char, length);				//convert to wchar_t
+
+	//wprintf(L"\tWchar version: %ls\n", fname_w);
+
+	return fname_w;
+
+}
+
+
+
+/*
+	Converts an input wchar_t array to a string.
+	Returns: a wchar_t array with the contents of the input string.	
+*/
+std::string wcharToString(wchar_t *fname_w) {
+	//initializing char channel name
+	size_t nameLen = wcslen(fname_w) + 1;							//account for null character when converting
+	char* fname_char = new char[nameLen];	
+
+	//converting wchar_t to char
+	size_t charsConverted = 0;
+	wcstombs_s(&charsConverted, fname_char, nameLen, fname_w, nameLen);
+
+	//converting char to string for equality-checking
+	std::string fname_str = std::string(fname_char);
+
+	return fname_str;
+}
+
+/*
+	Compiles a list of ACQ files in the directory specified by ACQFilePath (provided by user).
+	
+	See sortACQ Files for sorting by date (i.e. Windows' last-modified date). 
+	Last-modified date (NOT last-created date) reflects the date of data collection.
+
+	Inputs: ACQFilePath, a string containing the path to the folder containing the ACQ files.
+	Returns: a vector<string> containing filenames, with the full absolute path. 
+*/
+std::vector<std::string> listACQFiles(std::string ACQFilePath) {//, std::string currentPath) {
+
+	WIN32_FIND_DATA data;
+	HANDLE hFind;
 	std::string line;
 	std::vector<std::string> files;
+	wchar_t *path_w;
+	wchar_t *fname_w;
+	std::string fname;
 
-	//reading text file containing filenames, "file_names.txt"
-	while(getline(filenames, line))
-		files.push_back(line);				//filenames to vector of strings
+	//create search-string: look for ACQ files in the given directory 
+	path_w = stringToWchar(ACQFilePath + "\\*.acq");
+	hFind = FindFirstFile(path_w, &data);
+
+	//if path is valid
+	if (hFind != INVALID_HANDLE_VALUE) 
+	{
+		//for all files in directory, add full filenames + paths to vector<string>
+		do {
+			fname_w = data.cFileName;							
+			fname = ACQFilePath + "\\" + wcharToString(fname_w);
+			files.push_back(fname);
+		} while (FindNextFile(hFind, &data));
+		FindClose(hFind);
+	}
 
 	return files;
 }
@@ -137,13 +225,15 @@ std::vector<std::string> listACQFiles() { //std::string ACQFilePath, std::string
 
 
 /*
-	Sort two pairs by second element of pair.
-*/
-//bool sortBySecond(const std::pair<std::string,FILETIME> &a, const std::pair<std::string,FILETIME> &b)
-//{
-//    return (CompareFileTime(&a.second, &b.second) == -1);
-//}
+	Given two <string, FILETIME> Pairs, this will compare the two Pairs by FILETIME. 
+	FILETIME: Windows' date-time struct for files
 
+	Inputs: left, right (two <string, FILETIME> Pairs). 
+
+	Returns: true if left FILETIME < right FILETIME
+			 false otherwise
+
+*/
 struct sortBySecond {
     bool operator()(const std::pair<std::string,FILETIME> &left, const std::pair<std::string,FILETIME> &right) {
         return (CompareFileTime(&left.second, &right.second) == -1);
@@ -152,6 +242,13 @@ struct sortBySecond {
 
 /*
 	Returns sorted list of ACQ files (sorted by last-modified date).
+	Note that this sort involves Windows' last-modified date, NOT date-created!
+
+	Date-created is inaccurate for these ACQ files. 
+	Last-modified reflects the date specified in the filenames of the ACQ files.
+
+	Inputs: vector<string> of unsorted ACQ files in the desired directory (ACQFilePath), path included.
+	Returns: vector<string> of sorted ACQ files in the desired directory, path included
 */
 std::vector<std::string> sortACQFiles(std::vector<std::string> fnames) { 
 	//using list of names, create vector of pairs and sort by date
@@ -188,63 +285,6 @@ std::vector<std::string> sortACQFiles(std::vector<std::string> fnames) {
 
 
 
-
-
-
-
-/*
-	Converts an input string to a wchar_t array.
-	Returns: a wchar_t array with the contents of the input string.	
-*/
-wchar_t* stringToWchar(std::string fname_str) {
-	char* fname_char;
-	wchar_t fname_w[255];
-	size_t length;
-
-	//std::cout << "\tString version: " << fname_str << std::endl;
-
-	//string to char*
-	fname_char = new char[fname_str.size() + 1];					//creating new char array
-	std::copy(fname_str.begin(), fname_str.end(), fname_char);		//copying contents of string to char*
-	fname_char[fname_str.size()] = '\0';							//null character at end of char*
-
-	//std::cout << "\tChar version: " << fname_char << std::endl;
-
-	//char* to wchar_t
-	length = strlen(fname_char);									//find length of char array
-	mbstowcs_s(&length, fname_w, fname_char, length);				//convert to wchar_t
-
-	//wprintf(L"\tWchar version: %ls\n", fname_w);
-
-	return fname_w;
-
-}
-
-
-
-
-/*
-	Converts an input wchar_t array to a string.
-	Returns: a wchar_t array with the contents of the input string.	
-*/
-std::string wcharToString(wchar_t *fname_w) {
-	//initializing char channel name
-	size_t nameLen = wcslen(fname_w) + 1;							//account for null character when converting
-	char* fname_char = new char[nameLen];	
-
-	//converting wchar_t to char
-	size_t charsConverted = 0;
-	wcstombs_s(&charsConverted, fname_char, nameLen, fname_w, nameLen);
-
-	//converting char to string for equality-checking
-	std::string fname_str = std::string(fname_char);
-
-	return fname_str;
-}
-
-
-
-
 /*
 	Compiles a list of animals among all ACQ files in the current directory.
 
@@ -271,7 +311,6 @@ std::vector<std::string> listAnimals(std::vector<std::string> &fnames) {
 	//for each file in current folder
 	for(int i = 0; i < fnames.size(); i++) {
 		fname_str = fnames.at(i);
-		//std::cout << "Filename: " << fname_str << std::endl;
 		fname_w = stringToWchar(fname_str);					
 
 		//open the file
@@ -285,25 +324,20 @@ std::vector<std::string> listAnimals(std::vector<std::string> &fnames) {
 				wChannelName = chInfo.label;	
 				strChannelName = wcharToString(wChannelName);
 
+				//find the animal's name (e.g. BM-40, BM-51...)
 				std::size_t endPos = strChannelName.find("(");
 				animalName = strChannelName.substr(0, endPos);
 					
 				//if animal isn't already in the animal name list, add it. 	
 				if (std::find(animals.begin(), animals.end(), animalName) == animals.end()) {
-					//std::cout << "Animal being added: " << animalName << std::endl;
 					animals.push_back(animalName);	
-					std::cout << "ANIMAL NAMES: " << animalName << std::endl;
-
+					//std::cout << "ANIMAL NAMES: " << animalName << std::endl;
 				}
 			}
-
 			closeACQFile(&acqFile);
 		}
-
 	}
-
 	return animals;
-
 }
 
 
@@ -538,72 +572,57 @@ int main(int argc, char* argv[]) {
 	std::string ACQFilePath;
 	std::string DCLFilePath;
 
-	//std::string currentPath = ExePath(argv[0]);
-	//std::cout << "\n CURRENT PATH OF PROGRAM: " << currentPath << "\n" << std::endl;
-
 	//Prompt user for source and destination paths:
-	std::cout << "Enter full path where ACQ files are located: " << std::endl;
+ 	std::cout << "Enter full path where ACQ files are located: " << std::endl;
 	std::getline(std::cin, ACQFilePath);
 	std::cout << "PATH PROVIDED: " << ACQFilePath << "\n" << std::endl;
 
 	std::cout << "Enter full path where you would like DCL files to be created: " << std::endl;
 	std::getline(std::cin, DCLFilePath);
 	std::cout << "PATH PROVIDED: " << DCLFilePath << "\n" << std::endl;
-
-		//THIS VERSION DOESN'T WORK
-		//std::vector<std::string> fnames = listACQFilesDir(ACQFilePath);
-		//for(int i = 0; i < fnames.size(); i++) {
-		//	std::cout << "FILE NAMES: " << fnames.at(i) << std::endl;
-		//}
-
 	std::cout << "\n\n\n" << std::endl;
 
-	////THIS VERSION WORKS
-	std::vector<std::string> unsorted = listACQFiles();//listACQFilesDir(ACQFilePath);//ACQFilePath, currentPath);
+
+	//obtain ACQ files from specified directory, and sort the files by Windows' date-last-modified
+	std::vector<std::string> unsorted = listACQFiles(ACQFilePath);
 	std::vector<std::string> fnames = sortACQFiles(unsorted);
+
+	//print out files in order -- make sure they're in order of date!
 	for(int i = 0; i < fnames.size(); i++) {
 		std::cout << "FNAMES: " << fnames.at(i) << std::endl;
 	}
 
+	//preparing to sort through animal data present in files, and separate files by
+	//which animals' data they contain.
 	std::vector<std::string> filesToRemove;
 	std::vector<std::string> animals = listAnimals(fnames);		//obtain a list of animals in the ACQ files
 	std::string currentAnimal;
-
 	std::vector<std::string> fnames_animal;
 
 
-	//for each animal in the ACQ files
+	//for each animal's data present in the ACQ files provided, make sure fnames_animal
+	//contains ONLY the filenames containing that animal's data.
 	for(int k = 0; k < animals.size(); k++) {
 		currentAnimal = animals.at(k);
 
-		//create a copy of fnames specific to that animal, fnames_animal
+		//create a copy of filename vector for that animal, fnames_animal
 		std::vector<std::string> fnames_animal(fnames);
-		filesToRemove.clear();
+		filesToRemove.clear();			//clear old filesToRemove vector!
 
-		for(int i = 0; i < fnames_animal.size(); i++) {
-			std::cout << "FNAMES_ANIMAL: " << fnames_animal.at(i) << std::endl;
-		}
-
+		//for(int i = 0; i < fnames_animal.size(); i++) {
+		//	std::cout << "FNAMES_ANIMAL: " << fnames_animal.at(i) << std::endl;
+		//}
 
 		//for each filename...
 		for(int i = 0; i < fnames.size(); i++) {
+			//convert filename to wchar for ACQ API
 			fname_str = fnames.at(i);
-			//std::cout << "Filename: " << fname_str << std::endl;
 			fname_w = stringToWchar(fname_str);					
-			//const wchar_t* fname_w = L"IctalLikeExample.acq";
-
-/*			fname_animal_str = fnames_animal.at(i);
-			fname_animal_w = stringToWchar(fname_animal_str);*/					
-
+		
 			//open the file
 			if(initACQFile(fname_w, &acqFile))	{
-				//std::cout << "\tAre we getting here?" << std::endl;
-
-				//std::cout << "\tCurrent ACQ file: " << fname_str << std::endl;	
-
 				channelsCount = acqFile.numChannels;
 				scanFreq = 1000.0/acqFile.sampleRate;		 			//Conversion from msec/sample to samples/sec (Hz).
-				//std::cout << "Scan Frequency Within Loop: " << scanFreq << std::endl;
 
 				//for each channel in that file...
 				for(int j = 0; j < channelsCount; j++)				
@@ -619,29 +638,23 @@ int main(int argc, char* argv[]) {
 					if((strChannelName.compare(currentAnimal + "(l)") == 0) || (strChannelName.compare(currentAnimal + "(r)") == 0)) {
 						bm_flag = true;									//set flag to true
 						numDataPoints += numSamples;					//total data points = sum of all channels' data points
-						//std::cout << "Adding to list: " << numDataPoints << std::endl;
 					}
-					//std::cout << "\t" << strChannelName << std::endl;
 				}
 
 				//if this file does not have a channel representing animal BM, remove from list
 				if(!bm_flag) {
-					//what file are we erasing?
-					//std::cout << "Erasing: " << fname_str << std::endl;
 					filesToRemove.push_back(fname_str);
-					//fnames.erase(std::remove(fnames.begin(), fnames.end(), fname_str), fnames.end());
 				}
-			
 				bm_flag = false;
 
-
-				closeACQFile(&acqFile);		//CLOSING FILE
+				closeACQFile(&acqFile);
 			}
 
 		}
 
 		std::string toRemove;
-		//removing files that don't have BM-whatever
+
+		//removing files that don't have this animal's data from the list of files to scan
 		for(int i = 0; i < filesToRemove.size(); i++) {
 			toRemove = filesToRemove.at(i);
 			fnames_animal.erase(std::remove(fnames_animal.begin(), fnames_animal.end(), toRemove), fnames_animal.end());
@@ -649,28 +662,21 @@ int main(int argc, char* argv[]) {
 		}
 
 
-		std::cout << "FNAMES_ANIMAL AFTER REMOVAL: " << std::endl;
-		for(int i = 0; i < fnames_animal.size(); i++) {
-			fname_animal_str = fnames_animal.at(i);
-			std::cout << "\tFNAMES_ANIMAL Remaining: " << fname_animal_str << std::endl;
-			fname_animal_w = stringToWchar(fname_animal_str);	
-		}
-		//std::cout << "DONE PRINTING: " << std::endl;
-
+		//std::cout << "FNAMES_ANIMAL AFTER REMOVAL: " << std::endl;
+		//for(int i = 0; i < fnames_animal.size(); i++) {
+		//	fname_animal_str = fnames_animal.at(i);
+		//	std::cout << "\tFNAMES_ANIMAL Remaining: " << fname_animal_str << std::endl;
+		//	fname_animal_w = stringToWchar(fname_animal_str);	
+		//}
 	
-		for(int i = 0; i < fnames.size(); i++) {
-			std::cout << "FNAMES AFTER REMOVAL: " << fnames.at(i) << std::endl;
-		}
-		std::cout << "---------------\n\n " << std::endl;
+		//for(int i = 0; i < fnames.size(); i++) {
+		//	std::cout << "FNAMES AFTER REMOVAL: " << fnames.at(i) << std::endl;
+		//}
+		//std::cout << "---------------\n\n " << std::endl;
 
-		//std::cout << "Scan Frequency Outside Loop: " << scanFreq << std::endl;
-		//std::cout << "Num Data Points Outside Loop: " << numDataPoints << std::endl;
 	
 		//write a DCL header for the file
 		writeDCLHeader(dclFile, scanFreq, numDataPoints, currentAnimal, DCLFilePath);
-
-
-		//--------------
 
 		//keeping track of data position
 		long int dataCount = 1;											//starting point -- where in the data are we?
@@ -682,7 +688,7 @@ int main(int argc, char* argv[]) {
 		int chindex_left;
 		int chindex_right;
 
-		//for each of the filenames containing BM animal data...
+		//for each of the filenames containing BM animal's data, write the relevant animal's data to the new DCL file.
 		for(int i = 0; i < fnames_animal.size(); i++) {
 			fname_animal_str = fnames_animal.at(i);
 			std::cout << "Current filename: " << fname_animal_str << std::endl;
@@ -697,8 +703,6 @@ int main(int argc, char* argv[]) {
 						wChannelName = chInfo.label;	
 						strChannelName = wcharToString(wChannelName);
 
-						//what if there is more than one channel of the same name in a file?
-						//would be extremely unlikely... but it's good to know if that happens.
 						if(strChannelName.compare(currentAnimal + "(l)") == 0) chindex_left = j;
 						else if(strChannelName.compare(currentAnimal + "(r)") == 0) chindex_right = j;
 					}
@@ -710,7 +714,7 @@ int main(int argc, char* argv[]) {
 				while(dataCount < numPointsPerChannel) {
 			
 					if((numPointsPerChannel - dataCount) >= 1000000 ) {     //if there are enough points to large-size
-						segmentSize = 1000000;	//1.0e7; 
+						segmentSize = 1000000;
 					} else {
 						segmentSize = numPointsPerChannel - dataCount + 1;
 						std::cout << "\tSize of small chunk: " << segmentSize << std::endl;
@@ -721,15 +725,10 @@ int main(int argc, char* argv[]) {
 					dataCount += segmentSize;
 					std::cout << "\tPosition: " << dataCount << ", out of " << numPointsPerChannel << std::endl;
 				}
-
-				//std::cout << "Are we moving past the loop?" << std::endl;
 				closeACQFile(&acqFile);											///CLOSING FILE
-
 				dataCount = 1;
 			}
 		}
-
-
 
 		const int32_t timestampCount = 0;	//timestamps appear to be made up of 2 numbers
 		dclFile.write((char*)&timestampCount, sizeof(int32_t));
@@ -740,7 +739,6 @@ int main(int argc, char* argv[]) {
 		dclFile.close();
 
 		numDataPoints = 0;
-	
 	}
 
 	return 0;
