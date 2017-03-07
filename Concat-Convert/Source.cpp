@@ -50,7 +50,6 @@
 
 
 
-
 /*
 	Compiles a list of ACQ files in the current directory (full name), 
 	sorted in alphabetical order. 
@@ -102,8 +101,6 @@
 //}
 
 
-
-
 /*
 	Compiles a list of ACQ files in the current directory (full name), 
 	sorted in alphabetical order. Because files are named according to the date of their creation, 
@@ -143,20 +140,14 @@ wchar_t* stringToWchar(std::string fname_str) {
 	wchar_t fname_w[255];
 	size_t length;
 
-	//std::cout << "\tString version: " << fname_str << std::endl;
-
 	//string to char*
 	fname_char = new char[fname_str.size() + 1];					//creating new char array
 	std::copy(fname_str.begin(), fname_str.end(), fname_char);		//copying contents of string to char*
 	fname_char[fname_str.size()] = '\0';							//null character at end of char*
 
-	//std::cout << "\tChar version: " << fname_char << std::endl;
-
 	//char* to wchar_t
 	length = strlen(fname_char);									//find length of char array
 	mbstowcs_s(&length, fname_w, fname_char, length);				//convert to wchar_t
-
-	//wprintf(L"\tWchar version: %ls\n", fname_w);
 
 	return fname_w;
 
@@ -183,13 +174,15 @@ std::string wcharToString(wchar_t *fname_w) {
 	return fname_str;
 }
 
+
+
 /*
 	Compiles a list of ACQ files in the directory specified by ACQFilePath (provided by user).
 	
-	See sortACQ Files for sorting by date (i.e. Windows' last-modified date). 
+	See sortACQFiles() for sorting by date (i.e. Windows' last-modified date). 
 	Last-modified date (NOT last-created date) reflects the date of data collection.
 
-	Inputs: ACQFilePath, a string containing the path to the folder containing the ACQ files.
+	Inputs: ACQFilePath, a string containing the full absolute path to the folder containing the ACQ files.
 	Returns: a vector<string> containing filenames, with the full absolute path. 
 */
 std::vector<std::string> listACQFiles(std::string ACQFilePath) {//, std::string currentPath) {
@@ -239,6 +232,8 @@ struct sortBySecond {
         return (CompareFileTime(&left.second, &right.second) == -1);
     }
 };
+
+
 
 /*
 	Returns sorted list of ACQ files (sorted by last-modified date).
@@ -319,6 +314,7 @@ std::vector<std::string> listAnimals(std::vector<std::string> &fnames) {
 
 			//for each channel in that file...
 			for(int j = 0; j < channelsCount; j++)	{
+
 				//get channel information
 				getChannelInfo(j, &acqFile, &chInfo);
 				wChannelName = chInfo.label;	
@@ -353,15 +349,8 @@ std::vector<std::string> listAnimals(std::vector<std::string> &fnames) {
 		numDataPoints: the total number of data points the DCL file will contain. 	
 */
 void writeDCLHeader(std::fstream &file, int32_t &scanFreq, uint64_t &numDataPoints, std::string &animal, std::string DCLFilePath) {
-	//std::cout << "Scan Frequency Inside Function: " << scanFreq << std::endl;
-	//std::cout << "Num Data Points Outside Loop: " << numDataPoints << std::endl;
-
-	//std::string DCLFilePath = "C:\\Users\\sk430\\Documents\\Visual Studio 2012\\Projects\\ConcatBM40\\Debug\\dcl_files";
-	//std::cout << "-----DCL File path: " << DCLFilePath << std::endl;
 
 	std::string DCLFileName = DCLFilePath + "\\" + animal + ".dcl";
-
-	//file.open("testconcat.dcl", std::fstream::binary | std::fstream::out | std::fstream::in | std::fstream::trunc);
 	file.open(DCLFileName, std::fstream::binary | std::fstream::out | std::fstream::in | std::fstream::trunc);
 
 	const float fileVersion = 2.6f;
@@ -379,17 +368,12 @@ void writeDCLHeader(std::fstream &file, int32_t &scanFreq, uint64_t &numDataPoin
 	//this does matter! its value is floored in dClamp, so can't have 0 < analogGain < 1. 
 	const int32_t analogGain = 1;	
 
-	//std::cout << "Animal name input to header HERE: " << animal << std::endl;
-
 	//channel names and lengths
-	//const char* channelNames[2] = {"BM-40(l)", "BM-40(r)"};			//new char*[channelsCount];
-	//int nameLens[2] = {9, 9};	
 	std::string leftChannelName;
 	std::string rightChannelName;
 
 	leftChannelName = animal + "(l)";
 	rightChannelName = animal + "(r)";
-	
 	const char* channelNames[2] = {leftChannelName.c_str(), rightChannelName.c_str()};
 	int nameLens[2] = {leftChannelName.length() + 1, rightChannelName.length() + 1};		//+1 accounts for null character
 
@@ -397,8 +381,6 @@ void writeDCLHeader(std::fstream &file, int32_t &scanFreq, uint64_t &numDataPoin
 	const int32_t spacer[3] = { 0xffffffff, 0x00000000, 0xffffffff };
 	int dataStart;
 
-	//std::cout << "Scan Frequency Inside Function: " << scanFreq << std::endl;
-	//std::cout << "Num Data Points Outside Loop: " << numDataPoints << std::endl;
 	//writing out items for whole-file header
 	file.write((char*) &fileVersion, sizeof(float));
 	file.write((char*) &numDataPoints, sizeof(uint64_t));
@@ -414,18 +396,12 @@ void writeDCLHeader(std::fstream &file, int32_t &scanFreq, uint64_t &numDataPoin
 
 	//writing out channel-wise headers for DCL
 	for(int i=0; i<channelsCount; i++) {
-		//std::cout << "Channel " << i << std::endl;
-		//std::cout << "\t Channel Name Length: 0x" << std::hex << (int16_t) nameLens[i] << std::dec << std::endl;
-		//std::cout << "\t Channel Name: " << channelNames[i] << std::endl;
-
 		//writing the lengths of the strings
 		file.write((char*) &nameLens[i], sizeof(int8_t));
 
-		//writing channel name char-by-char (and printing out so can confirm with hex reader)
+		//writing channel name char-by-char
 		std::string channelName = channelNames[i];
-		//std::cout << "\t Channel Name: 0x" << std::hex;
 		for(int j=0; j<nameLens[i]; j++) {		
-		//	std::cout << (int16_t) channelName[j];
 			file.write((char*) &channelName[j], sizeof(char));
 		}
 		std::cout << std::dec << std::endl;
@@ -439,13 +415,7 @@ void writeDCLHeader(std::fstream &file, int32_t &scanFreq, uint64_t &numDataPoin
 
 	//writing out spacer between header and data
 	file.write((char*) &spacer, sizeof(int32_t)*3);
-	//for(int i=0; i<3; i++) {	//printing spacer contents to console
-	//	std::cout << "Spacer written: " << std::hex << spacer[i] << std::dec << std::endl;
-	//} 
 
-	//report current position: header-end, data-start
-	//dataStart = file.tellg();
-	//std::cout << "Data start position: " << dataStart << std::endl;
 }
 
 
@@ -502,8 +472,6 @@ void writeSegment(long int dataCount, long int segmentSize, ACQFile acqFile, std
 		}
 	}	
 
-	//std::cout << "we're getting here: " << std::endl;
-
 	for(int j = 0; j < segmentSize; j++) { //for each data point in channel segment
 
 		//double-to-float conversion
@@ -529,16 +497,8 @@ void writeSegment(long int dataCount, long int segmentSize, ACQFile acqFile, std
 		writeData[rDataIndex] =  (uint16_t) (rConvData);
 	}
 
-	//not making it to this point
-	//std::cout << "we're getting here, second time: " << std::endl;
-
-	//writing interleaved segment out as one block
-	//cout << "\tBefore write: " << file.tellg() << endl;
-	dclFile.write((char*) &writeData[0], sizeof(uint16_t)*segmentSize*channelsCount);
-	//cout << "\tAfter write: " << file.tellg() << endl;
-			
+	dclFile.write((char*) &writeData[0], sizeof(uint16_t)*segmentSize*channelsCount);	
 	std::cout << "\tWriting: " << std::hex << writeData[0]  << " to " << writeData[segmentSize*channelsCount -1] << std::dec << std::endl; 
-
 
 	delete lChannelData;
 	delete rChannelData;
@@ -581,7 +541,6 @@ int main(int argc, char* argv[]) {
 	std::getline(std::cin, DCLFilePath);
 	std::cout << "PATH PROVIDED: " << DCLFilePath << "\n" << std::endl;
 	std::cout << "\n\n\n" << std::endl;
-
 
 	//obtain ACQ files from specified directory, and sort the files by Windows' date-last-modified
 	std::vector<std::string> unsorted = listACQFiles(ACQFilePath);
@@ -712,7 +671,6 @@ int main(int argc, char* argv[]) {
 				int numPointsPerChannel = chInfo.numSamples;
 
 				while(dataCount < numPointsPerChannel) {
-			
 					if((numPointsPerChannel - dataCount) >= 1000000 ) {     //if there are enough points to large-size
 						segmentSize = 1000000;
 					} else {
@@ -737,7 +695,6 @@ int main(int argc, char* argv[]) {
 		dclFile.write((char*) &ttlstampCount, sizeof(int32_t));
 
 		dclFile.close();
-
 		numDataPoints = 0;
 	}
 
