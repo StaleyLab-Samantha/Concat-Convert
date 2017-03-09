@@ -217,17 +217,16 @@ std::vector<std::string> listACQFiles(std::string ACQFilePath) {//, std::string 
 
 
 
+
 /*
 	Given two <string, FILETIME> Pairs, this will compare the two Pairs by FILETIME. 
 	FILETIME: Windows' date-time struct for files
 
 	Inputs: left, right (two <string, FILETIME> Pairs). 
-
-	Returns: true if left FILETIME < right FILETIME
-			 false otherwise
-
+	Returns: true if left FILETIME < right FILETIME, false otherwise
 */
-struct sortBySecond {
+
+struct sortBySecondFiletime {
     bool operator()(const std::pair<std::string,FILETIME> &left, const std::pair<std::string,FILETIME> &right) {
         return (CompareFileTime(&left.second, &right.second) == -1);
     }
@@ -245,7 +244,7 @@ struct sortBySecond {
 	Inputs: vector<string> of unsorted ACQ files in the desired directory (ACQFilePath), path included.
 	Returns: vector<string> of sorted ACQ files in the desired directory, path included
 */
-std::vector<std::string> sortACQFiles(std::vector<std::string> fnames) { 
+std::vector<std::string> sortACQFilesFiletime(std::vector<std::string> fnames) { 
 	//using list of names, create vector of pairs and sort by date
 	std::vector<std::pair<std::string, FILETIME> > fnames_times;
 
@@ -268,7 +267,7 @@ std::vector<std::string> sortACQFiles(std::vector<std::string> fnames) {
 	}
 
 	//sort pair-vector by filetime
-	std::sort(fnames_times.begin(), fnames_times.end(), sortBySecond());
+	std::sort(fnames_times.begin(), fnames_times.end(), sortBySecondFiletime());
 
 	//create vector of sorted filenames from pair-vector
 	for(int i=0; i < fnames_times.size(); i++) {
@@ -278,6 +277,68 @@ std::vector<std::string> sortACQFiles(std::vector<std::string> fnames) {
 	return sorted_fnames;
 }
 
+
+
+
+/*
+	Given two <string, string> Pairs, this will compare the two Pairs by alphabetic string ordering. 
+	Inputs: left, right (two <string, string> Pairs). 
+
+	Returns: true if left string < right string alphabetically. 
+
+	In sorting files, Pair.first is the filename/path, while Pair.second is the datetime portion of the filename.
+	In YYYY-MM-DD format, strings that are sorted alphabetically are also sorted by date.
+
+*/
+
+struct sortBySecondTimestamp {
+    bool operator()(const std::pair<std::string,std::string> &left, const std::pair<std::string,std::string> &right) {
+        return (left.second < right.second);
+    }
+};
+
+
+
+
+/*
+	Returns sorted list of ACQ files (sorted by datetime in filename).
+
+	Using file-naming timestamp convention:
+	[beginning of name]YYYY-MM-DDTHH_MM_SS.acq
+	Sorting the last 19 characters (excluding extension) of the filenames should sort by date.
+
+	Inputs: vector<string> of unsorted ACQ files in the desired directory (ACQFilePath), path included.
+	Returns: vector<string> of sorted ACQ files in the desired directory, path included
+*/
+
+std::vector<std::string> sortACQFilesTimestamp(std::vector<std::string> fnames) { 
+	//using list of names, create vector of pairs and sort by date
+	std::vector<std::pair<std::string, std::string> > fnames_times;
+	std::vector<std::string> sorted_fnames;
+	//HANDLE hFind;
+	//WIN32_FIND_DATAA data;
+	std::pair<std::string, std::string> file;
+
+	//for each filename in list
+	for(int i = 0; i < fnames.size(); i++) {
+		//first element of pair is filename
+		file.first = fnames[i];
+		//second element of pair is filename's timestamp
+		file.second = fnames[i].substr(fnames[i].length()-23, 19);
+
+		fnames_times.push_back(file);						//add string-filetime pair to pair-vector
+	}
+
+	//sort pair-vector by filetime
+	std::sort(fnames_times.begin(), fnames_times.end(), sortBySecondTimestamp());
+
+	//create vector of sorted filenames from pair-vector
+	for(int i=0; i < fnames_times.size(); i++) {
+		sorted_fnames.push_back(fnames_times[i].first);
+	}
+
+	return sorted_fnames;
+}
 
 
 /*
@@ -542,9 +603,11 @@ int main(int argc, char* argv[]) {
 	std::cout << "PATH PROVIDED: " << DCLFilePath << "\n" << std::endl;
 	std::cout << "\n\n\n" << std::endl;
 
-	//obtain ACQ files from specified directory, and sort the files by Windows' date-last-modified
+	//obtain ACQ files from specified directory, and sort the files by date
 	std::vector<std::string> unsorted = listACQFiles(ACQFilePath);
-	std::vector<std::string> fnames = sortACQFiles(unsorted);
+	std::vector<std::string> fnames = sortACQFilesTimestamp(unsorted);		//USE THIS to sort by filename's timestamp
+	//std::vector<std::string> fnames = sortACQFilesFiletime(unsorted);		//USE THIS to sort by Windows' last-modified time
+	
 
 	//print out files in order -- make sure they're in order of date!
 	for(int i = 0; i < fnames.size(); i++) {
