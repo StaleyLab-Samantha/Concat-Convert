@@ -19,89 +19,15 @@
 
 
 /*
-	README:
-
 	Running this script will concatenate all ACQ files in the current folder into DCL files (which are labeled by animal). 
 
 */
 
 
 
-
-
-
-
 /*
-	Obtains the current path of the executable, minus the executable name. 
-
-	NOTE: This function is not complete -- still needs to accept input 
-	(ie. argv[0], which GENERALLY contains the full path to the executable. Seems this is not a guarantee!) 
-	Will not be using this function because of the uncertainty surrounding argv[0]
-
-	Returns:
-		a string containing the path to the currently-executing program. 
-*/
-//std::string ExePath() {
-//    char buffer[MAX_PATH];
-//    GetModuleFileNameA( NULL, buffer, MAX_PATH );
-//    std::string::size_type pos = std::string( buffer ).find_last_of( "\\/" );
-//    return std::string( buffer ).substr( 0, pos);
-//}
-
-
-
-/*
-	Compiles a list of ACQ files in the current directory (full name), 
-	sorted in alphabetical order. 
+	OLD -- DO NOT USE.
 	
-	Because files are named according to the date of their creation, 
-	alphabetical order = chronological order.
-	EDIT 3-6-2017: NOT ALWAYS TRUE. Work with Windows' "Last Modified" time. 
-
-	NOTE: When using this function, error occurs at return! Not sure why...
-	Both listACQFilesDir() and listACQFiles() do (and should) have the same output for a given path. 
-	
-	It is unclear why the program fails well after the function call when listACQFilesDir() is used, 
-		but not when listACQFiles() is used. 
-
-	Returns: a vector<string> containing filenames, with the full absolute path. 
-*/
-//std::vector<std::string> listACQFilesDir(std::string ACQFilePath) {
-//	HANDLE hFind;
-//	WIN32_FIND_DATAA data;
-//
-//	std::string line;
-//	std::vector<std::string> files;
-//
-//	wchar_t search_w[255];
-//	size_t length;
-//
-//	std::string searchFor = ACQFilePath + "\\*.acq";
-//
-//	//string to char*
-//	char* charSearch = new char;
-//	std::strcpy(charSearch, searchFor.c_str());
-//
-//	////char* to wchar
-//	//length = strlen(charSearch);									//find length of char array
-//	//mbstowcs_s(&length, search_w, charSearch, length);
-//
-//	hFind = FindFirstFileA(charSearch, &data);
-//	if (hFind != INVALID_HANDLE_VALUE) {
-//		do {
-//			line = ACQFilePath + "\\" + data.cFileName;
-//			//printf("%s\n", line);
-//			files.push_back(line);
-//		} while (FindNextFileA(hFind, &data));
-//		FindClose(hFind);
-//	}
-//
-//	return files;
-//
-//}
-
-
-/*
 	Compiles a list of ACQ files in the current directory (full name), 
 	sorted in alphabetical order. Because files are named according to the date of their creation, 
 	alphabetical order = chronological order.
@@ -217,7 +143,6 @@ std::vector<std::string> listACQFiles(std::string ACQFilePath) {//, std::string 
 
 
 
-
 /*
 	Given two <string, FILETIME> Pairs, this will compare the two Pairs by FILETIME. 
 	FILETIME: Windows' date-time struct for files
@@ -315,8 +240,6 @@ std::vector<std::string> sortACQFilesTimestamp(std::vector<std::string> fnames) 
 	//using list of names, create vector of pairs and sort by date
 	std::vector<std::pair<std::string, std::string> > fnames_times;
 	std::vector<std::string> sorted_fnames;
-	//HANDLE hFind;
-	//WIN32_FIND_DATAA data;
 	std::pair<std::string, std::string> file;
 
 	//for each filename in list
@@ -339,6 +262,7 @@ std::vector<std::string> sortACQFilesTimestamp(std::vector<std::string> fnames) 
 
 	return sorted_fnames;
 }
+
 
 
 /*
@@ -566,6 +490,7 @@ void writeSegment(long int dataCount, long int segmentSize, ACQFile acqFile, std
 	delete writeData;
 
 }
+
 
 
 int main(int argc, char* argv[]) {
