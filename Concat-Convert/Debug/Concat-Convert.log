@@ -1,27 +1,29 @@
-﻿Build started 3/9/2017 2:29:37 PM.
-     1>Project "C:\Users\sk430\Documents\Concat-Convert\Concat-Convert\Concat-Convert.vcxproj" on node 2 (Build target(s)).
+﻿Build started 3/17/2017 11:32:41 AM.
+     1>Project "C:\Users\sk430\Documents\Visual Studio 2012\Projects\Concat-Convert\Concat-Convert\Concat-Convert.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
          C:\Program Files\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I"C:\Users\sk430\Documents\BIOPAC Systems, Inc\BIOPAC File API 3.2" /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /wd4996 /analyze- /errorReport:prompt Source.cpp
          Source.cpp
-     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(152): warning C4172: returning address of local variable or temporary
-     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(302): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(315): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(347): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(422): warning C4101: 'dataStart' : unreferenced local variable
-     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(529): warning C4244: 'initializing' : conversion from 'double' to 'uint16_t', possible loss of data
-     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(530): warning C4244: 'initializing' : conversion from 'double' to 'uint16_t', possible loss of data
-     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(590): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(604): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(616): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(624): warning C4244: '=' : conversion from 'double' to 'int32_t', possible loss of data
-     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(657): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(683): warning C4244: 'initializing' : conversion from 'uint64_t' to 'long', possible loss of data
-     1>c:\users\sk430\documents\concat-convert\concat-convert\source.cpp(691): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\sk430\documents\visual studio 2012\projects\concat-convert\concat-convert\source.cpp(78): warning C4172: returning address of local variable or temporary
+     1>c:\users\sk430\documents\visual studio 2012\projects\concat-convert\concat-convert\source.cpp(182): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\sk430\documents\visual studio 2012\projects\concat-convert\concat-convert\source.cpp(198): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\sk430\documents\visual studio 2012\projects\concat-convert\concat-convert\source.cpp(246): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\sk430\documents\visual studio 2012\projects\concat-convert\concat-convert\source.cpp(259): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\sk430\documents\visual studio 2012\projects\concat-convert\concat-convert\source.cpp(292): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\sk430\documents\visual studio 2012\projects\concat-convert\concat-convert\source.cpp(367): warning C4101: 'dataStart' : unreferenced local variable
+     1>c:\users\sk430\documents\visual studio 2012\projects\concat-convert\concat-convert\source.cpp(474): warning C4244: 'initializing' : conversion from 'double' to 'uint16_t', possible loss of data
+     1>c:\users\sk430\documents\visual studio 2012\projects\concat-convert\concat-convert\source.cpp(475): warning C4244: 'initializing' : conversion from 'double' to 'uint16_t', possible loss of data
+     1>c:\users\sk430\documents\visual studio 2012\projects\concat-convert\concat-convert\source.cpp(538): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\sk430\documents\visual studio 2012\projects\concat-convert\concat-convert\source.cpp(552): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\sk430\documents\visual studio 2012\projects\concat-convert\concat-convert\source.cpp(564): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\sk430\documents\visual studio 2012\projects\concat-convert\concat-convert\source.cpp(572): warning C4244: '=' : conversion from 'double' to 'int32_t', possible loss of data
+     1>c:\users\sk430\documents\visual studio 2012\projects\concat-convert\concat-convert\source.cpp(605): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\sk430\documents\visual studio 2012\projects\concat-convert\concat-convert\source.cpp(631): warning C4244: 'initializing' : conversion from 'uint64_t' to 'long', possible loss of data
+     1>c:\users\sk430\documents\visual studio 2012\projects\concat-convert\concat-convert\source.cpp(639): warning C4018: '<' : signed/unsigned mismatch
        Link:
-         C:\Program Files\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\sk430\Documents\Concat-Convert\Debug\Concat-Convert.exe" /INCREMENTAL /NOLOGO /LIBPATH:"C:\Users\sk430\Documents\BIOPAC Systems, Inc\BIOPAC File API 3.2" acqfile.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\sk430\Documents\Concat-Convert\Debug\Concat-Convert.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\sk430\Documents\Concat-Convert\Debug\Concat-Convert.lib" /MACHINE:X86 Debug\Source.obj
-         Concat-Convert.vcxproj -> C:\Users\sk430\Documents\Concat-Convert\Debug\Concat-Convert.exe
-     1>Done Building Project "C:\Users\sk430\Documents\Concat-Convert\Concat-Convert\Concat-Convert.vcxproj" (Build target(s)).
+         C:\Program Files\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\sk430\Documents\Visual Studio 2012\Projects\Concat-Convert\Debug\Concat-Convert.exe" /INCREMENTAL /NOLOGO /LIBPATH:"C:\Users\sk430\Documents\BIOPAC Systems, Inc\BIOPAC File API 3.2" acqfile.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\sk430\Documents\Visual Studio 2012\Projects\Concat-Convert\Debug\Concat-Convert.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\sk430\Documents\Visual Studio 2012\Projects\Concat-Convert\Debug\Concat-Convert.lib" /MACHINE:X86 Debug\Source.obj
+         Concat-Convert.vcxproj -> C:\Users\sk430\Documents\Visual Studio 2012\Projects\Concat-Convert\Debug\Concat-Convert.exe
+     1>Done Building Project "C:\Users\sk430\Documents\Visual Studio 2012\Projects\Concat-Convert\Concat-Convert\Concat-Convert.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:02.49
+Time Elapsed 00:00:01.58
