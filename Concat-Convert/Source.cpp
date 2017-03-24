@@ -273,56 +273,73 @@ std::vector<std::string> sortACQFilesTimestamp(std::vector<std::string> fnames) 
 		Eg: ["BM-40", "BM-41", "BM-36", ...]
 */
 
+//std::vector<std::string> listAnimals(std::vector<std::string> &fnames) {
+//
+//	std::string fname_str;
+//	wchar_t *fname_w;
+//	
+//	ACQFile acqFile;
+//
+//	CHInfo chInfo;
+//	wchar_t* wChannelName;
+//	std::string strChannelName;
+//
+//	int channelsCount = 1;	
+//
+//	std::vector<std::string> animals;
+//	std::string animalName;
+//
+//	//for each file in current folder
+//	for(int i = 0; i < fnames.size(); i++) {
+//		fname_str = fnames.at(i);
+//		fname_w = stringToWchar(fname_str);					
+//
+//		//open the file
+//		if(initACQFile(fname_w, &acqFile))	{
+//			channelsCount = acqFile.numChannels;
+//
+//			//for each channel in that file...
+//			for(int j = 0; j < channelsCount; j++)	{
+//
+//				//get channel information
+//				getChannelInfo(j, &acqFile, &chInfo);
+//				wChannelName = chInfo.label;	
+//				strChannelName = wcharToString(wChannelName);
+//
+//				//find the animal's name (e.g. BM-40, BM-51...)
+//				std::size_t endPos = strChannelName.find("(");
+//				animalName = strChannelName.substr(0, endPos);
+//					
+//				//if animal isn't already in the animal name list, add it. 	
+//				if (std::find(animals.begin(), animals.end(), animalName) == animals.end()) {
+//					animals.push_back(animalName);	
+//					//std::cout << "ANIMAL NAMES: " << animalName << std::endl;
+//				}
+//			}
+//			closeACQFile(&acqFile);
+//		}
+//	}
+//	return animals;
+//}
+
+
+/*
+	A dummy version of listAnimals. Returns a predetermined list of animals. Useful if
+	you do not wish all animals' data to be converted to DCL.
+
+	Returns: a vector<string> containing animal names (without L/R suffix or parens).
+		Eg: ["BM-40", "BM-41", "BM-36", ...]
+*/
 std::vector<std::string> listAnimals(std::vector<std::string> &fnames) {
+	//NOTE: BM-15, BM-22 DON'T EXIST
 
-	std::string fname_str;
-	wchar_t *fname_w;
+	//convert array of strings to vector of strings -- vectors cannot be assigned literals
+	//std::string animals_arr[] = {"BM-12", "BM-13", "BM-14", "BM-16", "BM-17", "BM-18", "BM-19", "BM-20", "BM-21", "BM-23"};
+	std::string animals_arr[] = {"BM-17", "BM-18", "BM-19", "BM-20", "BM-21", "BM-23"};
+	std::vector<std::string> animals( animals_arr, animals_arr + ( sizeof ( animals_arr ) /  sizeof ( std::string ) ) );
 	
-	ACQFile acqFile;
-
-	CHInfo chInfo;
-	wchar_t* wChannelName;
-	std::string strChannelName;
-
-	int channelsCount = 1;	
-
-	std::vector<std::string> animals;
-	std::string animalName;
-
-	//for each file in current folder
-	for(int i = 0; i < fnames.size(); i++) {
-		fname_str = fnames.at(i);
-		fname_w = stringToWchar(fname_str);					
-
-		//open the file
-		if(initACQFile(fname_w, &acqFile))	{
-			channelsCount = acqFile.numChannels;
-
-			//for each channel in that file...
-			for(int j = 0; j < channelsCount; j++)	{
-
-				//get channel information
-				getChannelInfo(j, &acqFile, &chInfo);
-				wChannelName = chInfo.label;	
-				strChannelName = wcharToString(wChannelName);
-
-				//find the animal's name (e.g. BM-40, BM-51...)
-				std::size_t endPos = strChannelName.find("(");
-				animalName = strChannelName.substr(0, endPos);
-					
-				//if animal isn't already in the animal name list, add it. 	
-				if (std::find(animals.begin(), animals.end(), animalName) == animals.end()) {
-					animals.push_back(animalName);	
-					//std::cout << "ANIMAL NAMES: " << animalName << std::endl;
-				}
-			}
-			closeACQFile(&acqFile);
-		}
-	}
 	return animals;
 }
-
-
 
 
 /*
@@ -545,6 +562,7 @@ int main(int argc, char* argv[]) {
 	std::vector<std::string> filesToRemove;
 	std::vector<std::string> animals = listAnimals(fnames);		//obtain a list of animals in the ACQ files
 	std::string currentAnimal;
+	std::string currentAnimal_nodash;
 	std::vector<std::string> fnames_animal;
 
 
@@ -552,6 +570,10 @@ int main(int argc, char* argv[]) {
 	//contains ONLY the filenames containing that animal's data.
 	for(int k = 0; k < animals.size(); k++) {
 		currentAnimal = animals.at(k);
+		currentAnimal_nodash = animals.at(k);
+		currentAnimal_nodash.erase(std::remove(currentAnimal_nodash.begin(), currentAnimal_nodash.end(), '-'), currentAnimal_nodash.end());
+		std::cout << "Current animal: " << currentAnimal;
+		std::cout << "Current animal, no dash: " << currentAnimal_nodash;
 
 		//create a copy of filename vector for that animal, fnames_animal
 		std::vector<std::string> fnames_animal(fnames);
@@ -583,7 +605,7 @@ int main(int argc, char* argv[]) {
 					numSamples = chInfo.numSamples;
 
 					//if this file contains the animal we're looking for...
-					if((strChannelName.compare(currentAnimal + "(l)") == 0) || (strChannelName.compare(currentAnimal + "(r)") == 0)) {
+					if((strChannelName.compare(currentAnimal + "(l)") == 0) || (strChannelName.compare(currentAnimal_nodash + "(l)") == 0)  || (strChannelName.compare(currentAnimal + "(r)") == 0) || (strChannelName.compare(currentAnimal_nodash + "(r)") == 0)) {
 						bm_flag = true;									//set flag to true
 						numDataPoints += numSamples;					//total data points = sum of all channels' data points
 					}
@@ -651,8 +673,8 @@ int main(int argc, char* argv[]) {
 						wChannelName = chInfo.label;	
 						strChannelName = wcharToString(wChannelName);
 
-						if(strChannelName.compare(currentAnimal + "(l)") == 0) chindex_left = j;
-						else if(strChannelName.compare(currentAnimal + "(r)") == 0) chindex_right = j;
+						if( (strChannelName.compare(currentAnimal + "(l)") == 0) || (strChannelName.compare(currentAnimal_nodash + "(l)") == 0)  ) chindex_left = j;
+						else if( (strChannelName.compare(currentAnimal + "(r)") == 0 ) || (strChannelName.compare(currentAnimal_nodash + "(r)") == 0) ) chindex_right = j;
 					}
 				}
 
