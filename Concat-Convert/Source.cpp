@@ -335,7 +335,10 @@ std::vector<std::string> listAnimals(std::vector<std::string> &fnames) {
 
 	//convert array of strings to vector of strings -- vectors cannot be assigned literals
 	//std::string animals_arr[] = {"BM-12", "BM-13", "BM-14", "BM-16", "BM-17", "BM-18", "BM-19", "BM-20", "BM-21", "BM-23"};
-	std::string animals_arr[] = {"BM-17", "BM-18", "BM-19", "BM-20", "BM-21", "BM-23"};
+	//std::string animals_arr[] = {"BM-17", "BM-18", "BM-19", "BM-20", "BM-21", "BM-23"};
+	//SKIPPING 21, COME BACK TO IT AFTER FIXING 21/22 ISSUE
+	//std::string animals_arr[] = {"BM-23", "BM-24", "BM-25", "BM-26", "BM-27", "BM-28", "BM-29", "BM-30", "BM-31"};
+	std::string animals_arr[] = {"BM-32", "BM-24", "BM-25", "BM-26", "BM-27", "BM-28", "BM-29", "BM-30", "BM-31"};
 	std::vector<std::string> animals( animals_arr, animals_arr + ( sizeof ( animals_arr ) /  sizeof ( std::string ) ) );
 	
 	return animals;
