@@ -319,6 +319,8 @@ std::vector<std::string> sortACQFilesTimestamp(std::vector<std::string> fnames) 
 //			closeACQFile(&acqFile);
 //		}
 //	}
+	////remove BM-22 -- this is a typo!
+	//animals.erase(std::remove(animals.begin(), animals.end(), "BM-22"), animals.end());
 //	return animals;
 //}
 
@@ -338,9 +340,14 @@ std::vector<std::string> listAnimals(std::vector<std::string> &fnames) {
 	//std::string animals_arr[] = {"BM-17", "BM-18", "BM-19", "BM-20", "BM-21", "BM-23"};
 	//SKIPPING 21, COME BACK TO IT AFTER FIXING 21/22 ISSUE
 	//std::string animals_arr[] = {"BM-23", "BM-24", "BM-25", "BM-26", "BM-27", "BM-28", "BM-29", "BM-30", "BM-31"};
-	std::string animals_arr[] = {"BM-32", "BM-24", "BM-25", "BM-26", "BM-27", "BM-28", "BM-29", "BM-30", "BM-31"};
+	//std::string animals_arr[] = {"BM-32", "BM-33", "BM-34", "BM-35", "BM-36", "BM-37", "BM-38", "BM-39", "BM-40", "BM-41", "BM-42", "BM-43", "BM-44", "BM-45", "BM-46", "BM-47", "BM-48", "BM-49", "BM-50"};
+	//std::string animals_arr[] = {"BM-60"};
+	std::string animals_arr[] = {"BM-21", "BM-22", "BM-33"};
 	std::vector<std::string> animals( animals_arr, animals_arr + ( sizeof ( animals_arr ) /  sizeof ( std::string ) ) );
 	
+	//remove BM-22 -- this is a typo!
+	animals.erase(std::remove(animals.begin(), animals.end(), "BM-22"), animals.end());
+
 	return animals;
 }
 
@@ -676,8 +683,19 @@ int main(int argc, char* argv[]) {
 						wChannelName = chInfo.label;	
 						strChannelName = wcharToString(wChannelName);
 
-						if( (strChannelName.compare(currentAnimal + "(l)") == 0) || (strChannelName.compare(currentAnimal_nodash + "(l)") == 0)  ) chindex_left = j;
-						else if( (strChannelName.compare(currentAnimal + "(r)") == 0 ) || (strChannelName.compare(currentAnimal_nodash + "(r)") == 0) ) chindex_right = j;
+						//exception: BM-21(l) is paired with BM-22(r) (typo). 
+						//BM-22(r) ALWAYS immediately follows BM-21(l)
+						//therefore index of BM-22(r) will always be 1 greater than index of BM-21(l)
+						if(strChannelName.compare("BM-21(l)") == 0) {
+							chindex_left = j;
+							chindex_right = j+1;
+						} else if(strChannelName.compare("BM-22(r)") == 0) {
+							//do nothing
+						} else {     //for all other animals, search for the appropriate channels
+							if( (strChannelName.compare(currentAnimal + "(l)") == 0) || (strChannelName.compare(currentAnimal_nodash + "(l)") == 0)  ) chindex_left = j;
+							else if( (strChannelName.compare(currentAnimal + "(r)") == 0 ) || (strChannelName.compare(currentAnimal_nodash + "(r)") == 0) ) chindex_right = j;
+						}
+
 					}
 				}
 
