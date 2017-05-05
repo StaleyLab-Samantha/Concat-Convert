@@ -269,17 +269,21 @@ std::vector<std::string> sortACQFilesTimestamp(std::vector<std::string> fnames) 
 
 /*
 	Compiles a list of animals among all ACQ files in the current directory.
+	Also creates a list of broken ACQ files.
 
 	Returns: a vector<string> containing animal names (without L/R suffix or parens).
 		Eg: ["BM-40", "BM-41", "BM-36", ...]
+
+		
 */
 
-std::vector<std::string> listAnimals(std::vector<std::string> &fnames) {
+std::vector<std::string> listAnimals(std::vector<std::string> &fnames, std::string DCLFilePath) {
 
 	std::string fname_str;
 	wchar_t *fname_w;
 	
 	ACQFile acqFile;
+	//std::ofstream brokenFilesList;
 
 	CHInfo chInfo;
 	wchar_t* wChannelName;
@@ -289,6 +293,9 @@ std::vector<std::string> listAnimals(std::vector<std::string> &fnames) {
 
 	std::vector<std::string> animals;
 	std::string animalName;
+
+	std::string brokenList = DCLFilePath + "\\broken_files_list.txt";
+	std::ofstream brokenFilesList(brokenList);
 
 	//for each file in current folder
 	for(int i = 0; i < fnames.size(); i++) {
@@ -318,6 +325,9 @@ std::vector<std::string> listAnimals(std::vector<std::string> &fnames) {
 				}
 			}
 			closeACQFile(&acqFile);
+		}
+		else {		//if can't be opened, it's a broken file -- add it to the list
+			brokenFilesList << fname_str.substr(fname_str.find_last_of("/\\")+1) << std::endl;
 		}
 	}
 	//remove BM-22 -- this is a typo!
@@ -679,7 +689,7 @@ int main(int argc, char* argv[]) {
 	ACQFile acqFile;
 	std::fstream dclFile;
 	std::ofstream dclInfoFile;
-	std::fstream brokenFilesList;
+	//std::fstream brokenFilesList;
 
 	CHInfo chInfo;
 	wchar_t* wChannelName;
@@ -734,7 +744,7 @@ int main(int argc, char* argv[]) {
 
 	//preparing to sort through animal data present in files, and separate files by
 	//which animals' data they contain.
-	std::vector<std::string> animals = listAnimals(fnames);		//obtain a list of animals in the ACQ files
+	std::vector<std::string> animals = listAnimals(fnames, DCLFilePath);		//obtain a list of animals in the ACQ files
 
 	for(int k = 0; k < animals.size(); k++) {
 		currentAnimal = animals.at(k);
