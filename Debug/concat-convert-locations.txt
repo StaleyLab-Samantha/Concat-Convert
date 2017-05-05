@@ -1,0 +1,5 @@
+ACQ FILE READ LOCATION
+"F:\StaleyBMDRIVEBackup - 3-24\Biomarkers, beginning to end\Biomarkers Files\Biomarkers Files"
+
+DCL FILE WRITE LOCATION
+C:\Users\sk430\Desktop\Concat-DCL

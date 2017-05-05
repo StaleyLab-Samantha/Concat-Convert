@@ -273,56 +273,56 @@ std::vector<std::string> sortACQFilesTimestamp(std::vector<std::string> fnames) 
 		Eg: ["BM-40", "BM-41", "BM-36", ...]
 */
 
-//std::vector<std::string> listAnimals(std::vector<std::string> &fnames) {
-//
-//	std::string fname_str;
-//	wchar_t *fname_w;
-//	
-//	ACQFile acqFile;
-//
-//	CHInfo chInfo;
-//	wchar_t* wChannelName;
-//	std::string strChannelName;
-//
-//	int channelsCount = 1;	
-//
-//	std::vector<std::string> animals;
-//	std::string animalName;
-//
-//	//for each file in current folder
-//	for(int i = 0; i < fnames.size(); i++) {
-//		fname_str = fnames.at(i);
-//		fname_w = stringToWchar(fname_str);					
-//
-//		//open the file
-//		if(initACQFile(fname_w, &acqFile))	{
-//			channelsCount = acqFile.numChannels;
-//
-//			//for each channel in that file...
-//			for(int j = 0; j < channelsCount; j++)	{
-//
-//				//get channel information
-//				getChannelInfo(j, &acqFile, &chInfo);
-//				wChannelName = chInfo.label;	
-//				strChannelName = wcharToString(wChannelName);
-//
-//				//find the animal's name (e.g. BM-40, BM-51...)
-//				std::size_t endPos = strChannelName.find("(");
-//				animalName = strChannelName.substr(0, endPos);
-//					
-//				//if animal isn't already in the animal name list, add it. 	
-//				if (std::find(animals.begin(), animals.end(), animalName) == animals.end()) {
-//					animals.push_back(animalName);	
-//					//std::cout << "ANIMAL NAMES: " << animalName << std::endl;
-//				}
-//			}
-//			closeACQFile(&acqFile);
-//		}
-//	}
-	////remove BM-22 -- this is a typo!
-	//animals.erase(std::remove(animals.begin(), animals.end(), "BM-22"), animals.end());
-//	return animals;
-//}
+std::vector<std::string> listAnimals(std::vector<std::string> &fnames) {
+
+	std::string fname_str;
+	wchar_t *fname_w;
+	
+	ACQFile acqFile;
+
+	CHInfo chInfo;
+	wchar_t* wChannelName;
+	std::string strChannelName;
+
+	int channelsCount = 1;	
+
+	std::vector<std::string> animals;
+	std::string animalName;
+
+	//for each file in current folder
+	for(int i = 0; i < fnames.size(); i++) {
+		fname_str = fnames.at(i);
+		fname_w = stringToWchar(fname_str);					
+
+		//open the file
+		if(initACQFile(fname_w, &acqFile))	{
+			channelsCount = acqFile.numChannels;
+
+			//for each channel in that file...
+			for(int j = 0; j < channelsCount; j++)	{
+
+				//get channel information
+				getChannelInfo(j, &acqFile, &chInfo);
+				wChannelName = chInfo.label;	
+				strChannelName = wcharToString(wChannelName);
+
+				//find the animal's name (e.g. BM-40, BM-51...)
+				std::size_t endPos = strChannelName.find("(");
+				animalName = strChannelName.substr(0, endPos);
+					
+				//if animal isn't already in the animal name list, add it. 	
+				if (std::find(animals.begin(), animals.end(), animalName) == animals.end()) {
+					animals.push_back(animalName);	
+					//std::cout << "ANIMAL NAMES: " << animalName << std::endl;
+				}
+			}
+			closeACQFile(&acqFile);
+		}
+	}
+	//remove BM-22 -- this is a typo!
+	animals.erase(std::remove(animals.begin(), animals.end(), "BM-22"), animals.end());
+	return animals;
+}
 
 
 /*
@@ -332,24 +332,24 @@ std::vector<std::string> sortACQFilesTimestamp(std::vector<std::string> fnames) 
 	Returns: a vector<string> containing animal names (without L/R suffix or parens).
 		Eg: ["BM-40", "BM-41", "BM-36", ...]
 */
-std::vector<std::string> listAnimals(std::vector<std::string> &fnames) {
-	//NOTE: BM-15, BM-22 DON'T EXIST
-
-	//convert array of strings to vector of strings -- vectors cannot be assigned literals
-	//std::string animals_arr[] = {"BM-12", "BM-13", "BM-14", "BM-16", "BM-17", "BM-18", "BM-19", "BM-20", "BM-21", "BM-23"};
-	//std::string animals_arr[] = {"BM-17", "BM-18", "BM-19", "BM-20", "BM-21", "BM-23"};
-	//SKIPPING 21, COME BACK TO IT AFTER FIXING 21/22 ISSUE
-	//std::string animals_arr[] = {"BM-23", "BM-24", "BM-25", "BM-26", "BM-27", "BM-28", "BM-29", "BM-30", "BM-31"};
-	//std::string animals_arr[] = {"BM-32", "BM-33", "BM-34", "BM-35", "BM-36", "BM-37", "BM-38", "BM-39", "BM-40", "BM-41", "BM-42", "BM-43", "BM-44", "BM-45", "BM-46", "BM-47", "BM-48", "BM-49", "BM-50"};
-	//std::string animals_arr[] = {"BM-60"};
-	std::string animals_arr[] = {"BM-21", "BM-22", "BM-33"};
-	std::vector<std::string> animals( animals_arr, animals_arr + ( sizeof ( animals_arr ) /  sizeof ( std::string ) ) );
-	
-	//remove BM-22 -- this is a typo!
-	animals.erase(std::remove(animals.begin(), animals.end(), "BM-22"), animals.end());
-
-	return animals;
-}
+//std::vector<std::string> listAnimals(std::vector<std::string> &fnames) {
+//	//NOTE: BM-15, BM-22 DON'T EXIST
+//
+//	//convert array of strings to vector of strings -- vectors cannot be assigned literals
+//	//std::string animals_arr[] = {"BM-12", "BM-13", "BM-14", "BM-16", "BM-17", "BM-18", "BM-19", "BM-20", "BM-21", "BM-23"};
+//	//std::string animals_arr[] = {"BM-17", "BM-18", "BM-19", "BM-20", "BM-21", "BM-23"};
+//	//SKIPPING 21, COME BACK TO IT AFTER FIXING 21/22 ISSUE
+//	//std::string animals_arr[] = {"BM-23", "BM-24", "BM-25", "BM-26", "BM-27", "BM-28", "BM-29", "BM-30", "BM-31"};
+//	//std::string animals_arr[] = {"BM-32", "BM-33", "BM-34", "BM-35", "BM-36", "BM-37", "BM-38", "BM-39", "BM-40", "BM-41", "BM-42", "BM-43", "BM-44", "BM-45", "BM-46", "BM-47", "BM-48", "BM-49", "BM-50"};
+//	//std::string animals_arr[] = {"BM-60"};
+//	std::string animals_arr[] = {"BM-21", "BM-22", "BM-33"};
+//	std::vector<std::string> animals( animals_arr, animals_arr + ( sizeof ( animals_arr ) /  sizeof ( std::string ) ) );
+//	
+//	//remove BM-22 -- this is a typo!
+//	animals.erase(std::remove(animals.begin(), animals.end(), "BM-22"), animals.end());
+//
+//	return animals;
+//}
 
 
 /*
