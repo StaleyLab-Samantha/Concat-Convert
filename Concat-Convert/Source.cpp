@@ -135,7 +135,8 @@ std::vector<std::string> listACQFiles(std::string ACQFilePath) {//, std::string 
 			files.push_back(fname);
 		} while (FindNextFile(hFind, &data));
 		FindClose(hFind);
-	}
+	} 
+
 
 	return files;
 }
@@ -520,6 +521,83 @@ void writeSegment(long int dataCount, long int segmentSize, ACQFile acqFile, std
 }
 
 
+std::vector<std::string> getFnamesAnimal(std::vector<std::string> fnames, std::string currentAnimal, std::string currentAnimal_nodash) {
+	ACQFile acqFile;
+	CHInfo chInfo;
+
+	std::string fname_str;
+	wchar_t *fname_w;
+
+	std::string fname_animal_str;
+	wchar_t *fname_animal_w;
+
+	int32_t scanFreq = 0;
+	int numSamples = 0;												//number of samples in a channel
+	int channelsCount = 1;											//must be at least one channel in file
+	uint64_t numDataPoints = 0;	
+
+	wchar_t* wChannelName;
+	std::string strChannelName;
+
+	bool bm_flag = false;
+	std::vector<std::string> filesToRemove;
+
+	//std::string currentAnimal;
+	//std::string currentAnimal_nodash;
+	//std::vector<std::string> fnames_animal;
+
+	std::vector<std::string> fnames_animal(fnames);
+
+	for(int i = 0; i < fnames.size(); i++) {
+		//convert filename to wchar for ACQ API
+		fname_str = fnames.at(i);
+		fname_w = stringToWchar(fname_str);					
+		
+		//open the file
+		if(initACQFile(fname_w, &acqFile))	{
+			channelsCount = acqFile.numChannels;
+			scanFreq = 1000.0/acqFile.sampleRate;		 			//Conversion from msec/sample to samples/sec (Hz).
+
+			//for each channel in that file...
+			for(int j = 0; j < channelsCount; j++)				
+			{
+				//get channel information
+				getChannelInfo(j, &acqFile, &chInfo);
+				wChannelName = chInfo.label;	
+				strChannelName = wcharToString(wChannelName);
+
+				numSamples = chInfo.numSamples;
+
+				//if this file contains the animal we're looking for...
+				if((strChannelName.compare(currentAnimal + "(l)") == 0) || (strChannelName.compare(currentAnimal_nodash + "(l)") == 0)  || (strChannelName.compare(currentAnimal + "(r)") == 0) || (strChannelName.compare(currentAnimal_nodash + "(r)") == 0)) {
+					bm_flag = true;									//set flag to true
+					numDataPoints += numSamples;					//total data points = sum of all channels' data points
+				}
+			}
+			//if this file does not have a channel representing animal BM, remove from list
+			if(!bm_flag) {
+				filesToRemove.push_back(fname_str);
+			}
+			bm_flag = false;
+
+			closeACQFile(&acqFile);
+		}
+	}
+	std::string toRemove;
+
+	//removing files that don't have this animal's data from the list of files to scan
+	for(int i = 0; i < filesToRemove.size(); i++) {
+		toRemove = filesToRemove.at(i);
+		fnames_animal.erase(std::remove(fnames_animal.begin(), fnames_animal.end(), toRemove), fnames_animal.end());
+
+	}
+
+	return fnames_animal;
+
+
+}
+
+
 
 int main(int argc, char* argv[]) {
 
@@ -531,6 +609,8 @@ int main(int argc, char* argv[]) {
 	
 	ACQFile acqFile;
 	std::fstream dclFile;
+	std::fstream dclInfoFile;
+	std::fstream brokenFilesList;
 
 	CHInfo chInfo;
 	wchar_t* wChannelName;
@@ -550,7 +630,7 @@ int main(int argc, char* argv[]) {
  	std::cout << "Enter full path where ACQ files are located: " << std::endl;
 	std::getline(std::cin, ACQFilePath);
 	std::cout << "PATH PROVIDED: " << ACQFilePath << "\n" << std::endl;
-
+	
 	std::cout << "Enter full path where you would like DCL files to be created: " << std::endl;
 	std::getline(std::cin, DCLFilePath);
 	std::cout << "PATH PROVIDED: " << DCLFilePath << "\n" << std::endl;
@@ -558,6 +638,11 @@ int main(int argc, char* argv[]) {
 
 	//obtain ACQ files from specified directory, and sort the files by date
 	std::vector<std::string> unsorted = listACQFiles(ACQFilePath);
+	//if(unsorted.empty()) {		//if there are no ACQ files in the list
+	//	std::cout << "Either the selected ACQ directory is invalid, or there are no ACQ files in the selected directory.\nPlease try again." << std::endl;
+	//	//Sleep(3000);
+	//	//return 0;
+	//}
 	std::vector<std::string> fnames = sortACQFilesTimestamp(unsorted);		//USE THIS to sort by filename's timestamp
 	//std::vector<std::string> fnames = sortACQFilesFiletime(unsorted);		//USE THIS to sort by Windows' last-modified time
 	
@@ -576,8 +661,7 @@ int main(int argc, char* argv[]) {
 	std::vector<std::string> fnames_animal;
 
 
-	//for each animal's data present in the ACQ files provided, make sure fnames_animal
-	//contains ONLY the filenames containing that animal's data.
+
 	for(int k = 0; k < animals.size(); k++) {
 		currentAnimal = animals.at(k);
 		currentAnimal_nodash = animals.at(k);
@@ -585,18 +669,15 @@ int main(int argc, char* argv[]) {
 		std::cout << "Current animal: " << currentAnimal;
 		std::cout << "Current animal, no dash: " << currentAnimal_nodash;
 
-		//create a copy of filename vector for that animal, fnames_animal
-		std::vector<std::string> fnames_animal(fnames);
-		filesToRemove.clear();			//clear old filesToRemove vector!
-
-		//for(int i = 0; i < fnames_animal.size(); i++) {
-		//	std::cout << "FNAMES_ANIMAL: " << fnames_animal.at(i) << std::endl;
-		//}
+		fnames_animal.clear();
+		fnames_animal = getFnamesAnimal(fnames, currentAnimal, currentAnimal_nodash);
+		//get scanFreq
+		//get numDataPoints
 
 		//for each filename...
-		for(int i = 0; i < fnames.size(); i++) {
+		for(int i = 0; i < fnames_animal.size(); i++) {
 			//convert filename to wchar for ACQ API
-			fname_str = fnames.at(i);
+			fname_str = fnames_animal.at(i);
 			fname_w = stringToWchar(fname_str);					
 		
 			//open the file
@@ -613,35 +694,74 @@ int main(int argc, char* argv[]) {
 					strChannelName = wcharToString(wChannelName);
 
 					numSamples = chInfo.numSamples;
-
-					//if this file contains the animal we're looking for...
 					if((strChannelName.compare(currentAnimal + "(l)") == 0) || (strChannelName.compare(currentAnimal_nodash + "(l)") == 0)  || (strChannelName.compare(currentAnimal + "(r)") == 0) || (strChannelName.compare(currentAnimal_nodash + "(r)") == 0)) {
-						bm_flag = true;									//set flag to true
 						numDataPoints += numSamples;					//total data points = sum of all channels' data points
 					}
 				}
-
-				//if this file does not have a channel representing animal BM, remove from list
-				if(!bm_flag) {
-					filesToRemove.push_back(fname_str);
-				}
-				bm_flag = false;
-
 				closeACQFile(&acqFile);
 			}
-
-		}
-
-		std::string toRemove;
-
-		//removing files that don't have this animal's data from the list of files to scan
-		for(int i = 0; i < filesToRemove.size(); i++) {
-			toRemove = filesToRemove.at(i);
-			fnames_animal.erase(std::remove(fnames_animal.begin(), fnames_animal.end(), toRemove), fnames_animal.end());
-
 		}
 
 
+		////create a copy of filename vector for that animal, fnames_animal
+		//std::vector<std::string> fnames_animal(fnames);
+		//filesToRemove.clear();							//clear old filesToRemove vector!
+
+		///*
+		////for(int i = 0; i < fnames_animal.size(); i++) {
+		////	std::cout << "FNAMES_ANIMAL: " << fnames_animal.at(i) << std::endl;
+		////}
+		//*/
+
+		////for each animal in the list of animals, make sure fnames_animal
+		////contains ONLY the filenames containing the current animal's data
+
+		////for each filename...
+		//for(int i = 0; i < fnames.size(); i++) {
+		//	//convert filename to wchar for ACQ API
+		//	fname_str = fnames.at(i);
+		//	fname_w = stringToWchar(fname_str);					
+		//
+		//	//open the file
+		//	if(initACQFile(fname_w, &acqFile))	{
+		//		channelsCount = acqFile.numChannels;
+		//		scanFreq = 1000.0/acqFile.sampleRate;		 			//Conversion from msec/sample to samples/sec (Hz).
+
+		//		//for each channel in that file...
+		//		for(int j = 0; j < channelsCount; j++)				
+		//		{
+		//			//get channel information
+		//			getChannelInfo(j, &acqFile, &chInfo);
+		//			wChannelName = chInfo.label;	
+		//			strChannelName = wcharToString(wChannelName);
+
+		//			numSamples = chInfo.numSamples;
+
+		//			//if this file contains the animal we're looking for...
+		//			if((strChannelName.compare(currentAnimal + "(l)") == 0) || (strChannelName.compare(currentAnimal_nodash + "(l)") == 0)  || (strChannelName.compare(currentAnimal + "(r)") == 0) || (strChannelName.compare(currentAnimal_nodash + "(r)") == 0)) {
+		//				bm_flag = true;									//set flag to true
+		//				numDataPoints += numSamples;					//total data points = sum of all channels' data points
+		//			}
+		//		}
+		//		//if this file does not have a channel representing animal BM, remove from list
+		//		if(!bm_flag) {
+		//			filesToRemove.push_back(fname_str);
+		//		}
+		//		bm_flag = false;
+
+		//		closeACQFile(&acqFile);
+		//	}
+		//}
+		//std::string toRemove;
+
+		////removing files that don't have this animal's data from the list of files to scan
+		//for(int i = 0; i < filesToRemove.size(); i++) {
+		//	toRemove = filesToRemove.at(i);
+		//	fnames_animal.erase(std::remove(fnames_animal.begin(), fnames_animal.end(), toRemove), fnames_animal.end());
+
+		//}
+
+		/*
 		//std::cout << "FNAMES_ANIMAL AFTER REMOVAL: " << std::endl;
 		//for(int i = 0; i < fnames_animal.size(); i++) {
 		//	fname_animal_str = fnames_animal.at(i);
@@ -653,7 +773,7 @@ int main(int argc, char* argv[]) {
 		//	std::cout << "FNAMES AFTER REMOVAL: " << fnames.at(i) << std::endl;
 		//}
 		//std::cout << "---------------\n\n " << std::endl;
-
+		*/
 	
 		//write a DCL header for the file
 		writeDCLHeader(dclFile, scanFreq, numDataPoints, currentAnimal, DCLFilePath);
@@ -710,7 +830,6 @@ int main(int argc, char* argv[]) {
 						std::cout << "\tSize of small chunk: " << segmentSize << std::endl;
 					}
 
-					//need to write this function
 					writeSegment(dataCount, segmentSize, acqFile, dclFile, chindex_left, chindex_right);
 					dataCount += segmentSize;
 					std::cout << "\tPosition: " << dataCount << ", out of " << numPointsPerChannel << std::endl;

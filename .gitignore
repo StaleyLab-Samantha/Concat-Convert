@@ -6,4 +6,6 @@ file_names.txt
 *.dll
 *.h
 *.lib
+*.obj
+*.pdb
 *.tlog
