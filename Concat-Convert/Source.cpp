@@ -2,6 +2,10 @@
 #include <iostream>
 #include <fstream>
 
+#include <sstream>
+#include <cctype>
+#include <clocale>
+
 #include <locale>
 #include <cstdlib>
 
@@ -267,6 +271,26 @@ std::vector<std::string> sortACQFilesTimestamp(std::vector<std::string> fnames) 
 
 
 
+
+//compares strings, case-insensitive
+bool icompare_pred(unsigned char a, unsigned char b)
+{
+    return std::tolower(a) == std::tolower(b);
+}
+
+bool icompare(std::string const& a, std::string const& b)
+{
+    if (a.length()==b.length()) {
+        return std::equal(b.begin(), b.end(),
+                           a.begin(), icompare_pred);
+    }
+    else {
+        return false;
+    }
+}
+
+
+
 /*
 	Compiles a list of animals among all ACQ files in the current directory.
 	Also creates a list of broken ACQ files.
@@ -283,7 +307,8 @@ std::vector<std::string> sortACQFilesTimestamp(std::vector<std::string> fnames) 
 		
 */
 
-std::vector<std::string> listAnimals(std::vector<std::string> &fnames) {//, std::string DCLFilePath) {
+std::vector<std::string> listAnimals(std::vector<std::string> &fnames, std::string animalsFromFile, std::string rightFormat, 
+									 std::string leftFormat) {//, std::string DCLFilePath) {
 
 	std::string fname_str;
 	wchar_t *fname_w;
@@ -303,37 +328,64 @@ std::vector<std::string> listAnimals(std::vector<std::string> &fnames) {//, std:
 	//std::string brokenList = DCLFilePath + "\\broken_files_list.txt";
 	//std::ofstream brokenFilesList(brokenList);
 
-	//for each file in current folder
-	for(int i = 0; i < fnames.size(); i++) {
-		fname_str = fnames.at(i);
-		fname_w = stringToWchar(fname_str);					
+	//if user wishes to concatenate all detected animals, detect animals! and provide a list to the user
+	if(icompare(animalsFromFile, "all")) {
 
-		//open the file
-		if(initACQFile(fname_w, &acqFile))	{
-			channelsCount = acqFile.numChannels;
+		//for each file in current folder
+		for(int i = 0; i < fnames.size(); i++) {
+			fname_str = fnames.at(i);
+			fname_w = stringToWchar(fname_str);					
 
-			//for each channel in that file...
-			for(int j = 0; j < channelsCount; j++)	{
+			//open the file
+			if(initACQFile(fname_w, &acqFile))	{
+				channelsCount = acqFile.numChannels;
 
-				//get channel information
-				getChannelInfo(j, &acqFile, &chInfo);
-				wChannelName = chInfo.label;	
-				strChannelName = wcharToString(wChannelName);
+				//for each channel in that file...
+				for(int j = 0; j < channelsCount; j++)	{
 
-				//find the animal's name (e.g. BM-40, BM-51...)
-				std::size_t endPos = strChannelName.find("(");
-				animalName = strChannelName.substr(0, endPos);
+					//get channel information
+					getChannelInfo(j, &acqFile, &chInfo);
+					wChannelName = chInfo.label;	
+					strChannelName = wcharToString(wChannelName);
+
+					//find the animal's name (e.g. BM-40, BM-51...)
+					std::size_t endPos = strChannelName.find("(");
+					animalName = strChannelName.substr(0, endPos);
 					
-				//if animal isn't already in the animal name list, add it. 	
-				if (std::find(animals.begin(), animals.end(), animalName) == animals.end()) {
-					animals.push_back(animalName);	
+					//if animal isn't already in the animal name list, add it. 	
+					if (std::find(animals.begin(), animals.end(), animalName) == animals.end()) {
+						animals.push_back(animalName);	
+					}
 				}
+				closeACQFile(&acqFile);
 			}
-			closeACQFile(&acqFile);
+			else {		//if can't be opened, it's a broken file -- add it to the list (filename only, excluding filepath)
+				//brokenFilesList << fname_str.substr(fname_str.find_last_of("/\\")+1) << std::endl;
+			}
 		}
-		else {		//if can't be opened, it's a broken file -- add it to the list
-			//brokenFilesList << fname_str.substr(fname_str.find_last_of("/\\")+1) << std::endl;
+	} 
+	else {	//if user instead provides a list of animals, parse the comma-separated list in animalsFromFile string
+
+		//remove any spaces the user may have added to the comma-separated list
+		animalsFromFile.erase(std::remove( animalsFromFile.begin(), animalsFromFile.end(), ' '), animalsFromFile.end());
+
+		std::stringstream ss(animalsFromFile);
+		std::string animalName;
+		std::string ch;
+
+		//while there are still characters in the stringstream from animalsFromFile
+		while(std::getline(ss, animalName, ',')) {
+		{
+				animals.push_back(animalName);	//add animalName to list
+				animalName = "";				//reset animalName
+			}
 		}
+
+		//for (i=0; i< animals.size(); i++)
+		//	std::cout << vect.at(i)<<std::endl;
+
+
+
 	}
 	//remove BM-22 -- this is a typo!
 	animals.erase(std::remove(animals.begin(), animals.end(), "BM-22"), animals.end());
@@ -742,7 +794,11 @@ int main(int argc, char* argv[]) {
 
 	std::string concatInfoFilePath;
 	std::ifstream concatInfoFile;
-	std::vector<std::string> paths;
+	
+	std::string animalsFromFile;
+	std::string animalFormat;
+	std::string rightFormat;
+	std::string leftFormat;
 
 
 	////Prompt user for source and destination paths:
@@ -793,9 +849,15 @@ int main(int argc, char* argv[]) {
 	//	std::cout << "FNAMES: " << fnames.at(i) << std::endl;
 	//}
 
+
+	//read next two lines of concat-info file, to determine which animals' data will be concatenated
+	std::getline(concatInfoFile, animalsFromFile);		//user-specified animals to concat, or "All"
+	std::getline(concatInfoFile, rightFormat);			//format of right-channel designation
+	std::getline(concatInfoFile, leftFormat);			//format of left-channel designation
+
 	//preparing to sort through animal data present in files, and separate files by
 	//which animals' data they contain.
-	std::vector<std::string> animals = listAnimals(fnames);//, DCLFilePath);		//obtain a list of animals in the ACQ files
+	std::vector<std::string> animals = listAnimals(fnames, animalsFromFile, rightFormat, leftFormat);//, DCLFilePath);		//obtain a list of animals in the ACQ files
 
 
 
