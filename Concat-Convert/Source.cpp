@@ -367,7 +367,8 @@ std::vector<std::string> listAnimals(std::vector<std::string> &fnames, std::stri
 	else {	//if user instead provides a list of animals, parse the comma-separated list in animalsFromFile string
 
 		//remove any spaces the user may have added to the comma-separated list
-		animalsFromFile.erase(std::remove( animalsFromFile.begin(), animalsFromFile.end(), ' '), animalsFromFile.end());
+		//what happens if there is whitespace in the animal name itself??
+		//animalsFromFile.erase(std::remove( animalsFromFile.begin(), animalsFromFile.end(), ' '), animalsFromFile.end());
 
 		std::stringstream ss(animalsFromFile);
 		std::string animalName;
@@ -380,11 +381,6 @@ std::vector<std::string> listAnimals(std::vector<std::string> &fnames, std::stri
 				animalName = "";				//reset animalName
 			}
 		}
-
-		//for (i=0; i< animals.size(); i++)
-		//	std::cout << vect.at(i)<<std::endl;
-
-
 
 	}
 	//remove BM-22 -- this is a typo!
@@ -800,6 +796,8 @@ int main(int argc, char* argv[]) {
 	std::string rightFormat;
 	std::string leftFormat;
 
+	std::string response;
+
 
 	////Prompt user for source and destination paths:
  //	std::cout << "Enter full path where ACQ files are located: " << std::endl;
@@ -820,14 +818,10 @@ int main(int argc, char* argv[]) {
 	std::getline(std::cin, concatInfoFilePath);
 
 	//make sure that the path the user provided is valid! If not, exit.
-
 	//concatInfoFile.open("C:\\Users\\sk430\\Documents\\Visual Studio 2012\\Projects\\Concat-Convert\\Release\\concat_info.txt", std::ifstream::in);
 	concatInfoFile.open(concatInfoFilePath, std::ifstream::in);
-
-
 	std::getline(concatInfoFile, ACQFilePath);
 	std::getline(concatInfoFile, DCLFilePath);
-
 
 	//obtain ACQ files from specified directory
 	std::vector<std::string> unsorted = listACQFiles(ACQFilePath);
@@ -844,12 +838,6 @@ int main(int argc, char* argv[]) {
 	std::vector<std::string> fnames = sortACQFilesTimestamp(unsorted);		//USE THIS to sort by filename's timestamp
 	//std::vector<std::string> fnames = sortACQFilesFiletime(unsorted);		//USE THIS to sort by Windows' last-modified time
 	
-	//print out files in order -- make sure they're in order of date!
-	//for(int i = 0; i < fnames.size(); i++) {
-	//	std::cout << "FNAMES: " << fnames.at(i) << std::endl;
-	//}
-
-
 	//read next two lines of concat-info file, to determine which animals' data will be concatenated
 	std::getline(concatInfoFile, animalsFromFile);		//user-specified animals to concat, or "All"
 	std::getline(concatInfoFile, rightFormat);			//format of right-channel designation
@@ -859,7 +847,21 @@ int main(int argc, char* argv[]) {
 	//which animals' data they contain.
 	std::vector<std::string> animals = listAnimals(fnames, animalsFromFile, rightFormat, leftFormat);//, DCLFilePath);		//obtain a list of animals in the ACQ files
 
+	//provide the user with the list of animals to be concatenated, confirm that this is correct.
+	std::cout << "The following is a list of the animals you wish to concatenate." << std::endl;
+	for(int i = 0; i < animals.size(); i++) {
+		std::cout << animals.at(i) << " ";
+	}
+	std::cout << "\n\nIs this list correct? (Y/N)" << std::endl;
+	std::getline(std::cin, response);
 
+	//if user answers that list is not correct, end concatenation and notify the user.
+	if(icompare(response, "n")) {
+		std::cout << "You indicated this animal-list is not correct. Stopping concatenation.\nPlease try again." << std::endl;
+		Sleep(3000);	//give user time to see message
+		return 0;
+	}
+	
 
 	////TRUNCATING HERE FOR TESTING
 	//animals.resize(10);
