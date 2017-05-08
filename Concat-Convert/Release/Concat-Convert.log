@@ -1,4 +1,4 @@
-﻿Build started 5/8/2017 1:05:36 PM.
+﻿Build started 5/8/2017 1:37:57 PM.
      1>Project "C:\Users\sk430\Documents\Visual Studio 2012\Projects\Concat-Convert\Concat-Convert\Concat-Convert.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
          C:\Program Files\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I"C:\Users\sk430\Documents\BIOPAC Systems, Inc\BIOPAC File API 3.2" /Zi /nologo /W3 /WX- /sdl /O2 /Oi /Oy- /GL /D WIN32 /D NDEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc110.pdb" /Gd /TP /wd4996 /analyze- /errorReport:prompt Source.cpp
@@ -9,20 +9,21 @@
      1>Source.cpp(251): warning C4018: '<' : signed/unsigned mismatch
      1>Source.cpp(264): warning C4018: '<' : signed/unsigned mismatch
      1>Source.cpp(335): warning C4018: '<' : signed/unsigned mismatch
-     1>Source.cpp(454): warning C4018: '<' : signed/unsigned mismatch
-     1>Source.cpp(462): warning C4244: '=' : conversion from 'double' to 'int32_t', possible loss of data
-     1>Source.cpp(492): warning C4018: '<' : signed/unsigned mismatch
-     1>Source.cpp(435): warning C4101: 'fname_animal_w' : unreferenced local variable
-     1>Source.cpp(512): warning C4244: '=' : conversion from 'double' to 'int32_t', possible loss of data
-     1>Source.cpp(533): warning C4018: '<' : signed/unsigned mismatch
-     1>Source.cpp(607): warning C4101: 'dataStart' : unreferenced local variable
-     1>Source.cpp(714): warning C4244: 'initializing' : conversion from 'double' to 'uint16_t', possible loss of data
-     1>Source.cpp(715): warning C4244: 'initializing' : conversion from 'double' to 'uint16_t', possible loss of data
-     1>Source.cpp(757): warning C4172: returning address of local variable or temporary
-     1>Source.cpp(870): warning C4018: '<' : signed/unsigned mismatch
-     1>Source.cpp(891): warning C4244: 'initializing' : conversion from 'uint64_t' to 'long', possible loss of data
-     1>Source.cpp(902): warning C4018: '<' : signed/unsigned mismatch
-     1>Source.cpp(764): warning C4101: 'fname_w' : unreferenced local variable
+     1>Source.cpp(450): warning C4018: '<' : signed/unsigned mismatch
+     1>Source.cpp(458): warning C4244: '=' : conversion from 'double' to 'int32_t', possible loss of data
+     1>Source.cpp(488): warning C4018: '<' : signed/unsigned mismatch
+     1>Source.cpp(431): warning C4101: 'fname_animal_w' : unreferenced local variable
+     1>Source.cpp(508): warning C4244: '=' : conversion from 'double' to 'int32_t', possible loss of data
+     1>Source.cpp(529): warning C4018: '<' : signed/unsigned mismatch
+     1>Source.cpp(603): warning C4101: 'dataStart' : unreferenced local variable
+     1>Source.cpp(710): warning C4244: 'initializing' : conversion from 'double' to 'uint16_t', possible loss of data
+     1>Source.cpp(711): warning C4244: 'initializing' : conversion from 'double' to 'uint16_t', possible loss of data
+     1>Source.cpp(753): warning C4172: returning address of local variable or temporary
+     1>Source.cpp(861): warning C4018: '<' : signed/unsigned mismatch
+     1>Source.cpp(878): warning C4018: '<' : signed/unsigned mismatch
+     1>Source.cpp(899): warning C4244: 'initializing' : conversion from 'uint64_t' to 'long', possible loss of data
+     1>Source.cpp(910): warning C4018: '<' : signed/unsigned mismatch
+     1>Source.cpp(760): warning C4101: 'fname_w' : unreferenced local variable
        Link:
          C:\Program Files\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\sk430\Documents\Visual Studio 2012\Projects\Concat-Convert\Release\Concat-Convert.exe" /INCREMENTAL:NO /NOLOGO /LIBPATH:"C:\Users\sk430\Documents\BIOPAC Systems, Inc\BIOPAC File API 3.2" acqfile.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\sk430\Documents\Visual Studio 2012\Projects\Concat-Convert\Release\Concat-Convert.pdb" /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\sk430\Documents\Visual Studio 2012\Projects\Concat-Convert\Release\Concat-Convert.lib" /MACHINE:X86 /SAFESEH Release\Source.obj
          Generating code
@@ -32,4 +33,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:01.82
+Time Elapsed 00:00:02.22
