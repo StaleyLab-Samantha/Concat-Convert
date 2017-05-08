@@ -274,10 +274,16 @@ std::vector<std::string> sortACQFilesTimestamp(std::vector<std::string> fnames) 
 	Returns: a vector<string> containing animal names (without L/R suffix or parens).
 		Eg: ["BM-40", "BM-41", "BM-36", ...]
 
+	Previously, also created a list of broken ACQ files, and wrote this list to a txt file in
+	path specified by DCLFilePath. However, it seems that the list of broken ACQ files varied 
+	from time to time (indicating that the ACQ files are not necessarily actually broken???).
+
+	For now, this functionality has been commented out.
+
 		
 */
 
-std::vector<std::string> listAnimals(std::vector<std::string> &fnames, std::string DCLFilePath) {
+std::vector<std::string> listAnimals(std::vector<std::string> &fnames) {//, std::string DCLFilePath) {
 
 	std::string fname_str;
 	wchar_t *fname_w;
@@ -294,8 +300,8 @@ std::vector<std::string> listAnimals(std::vector<std::string> &fnames, std::stri
 	std::vector<std::string> animals;
 	std::string animalName;
 
-	std::string brokenList = DCLFilePath + "\\broken_files_list.txt";
-	std::ofstream brokenFilesList(brokenList);
+	//std::string brokenList = DCLFilePath + "\\broken_files_list.txt";
+	//std::ofstream brokenFilesList(brokenList);
 
 	//for each file in current folder
 	for(int i = 0; i < fnames.size(); i++) {
@@ -321,13 +327,12 @@ std::vector<std::string> listAnimals(std::vector<std::string> &fnames, std::stri
 				//if animal isn't already in the animal name list, add it. 	
 				if (std::find(animals.begin(), animals.end(), animalName) == animals.end()) {
 					animals.push_back(animalName);	
-					//std::cout << "ANIMAL NAMES: " << animalName << std::endl;
 				}
 			}
 			closeACQFile(&acqFile);
 		}
 		else {		//if can't be opened, it's a broken file -- add it to the list
-			brokenFilesList << fname_str.substr(fname_str.find_last_of("/\\")+1) << std::endl;
+			//brokenFilesList << fname_str.substr(fname_str.find_last_of("/\\")+1) << std::endl;
 		}
 	}
 	//remove BM-22 -- this is a typo!
@@ -675,7 +680,30 @@ void writeSegment(long int dataCount, long int segmentSize, ACQFile acqFile, std
 }
 
 
+//reads paths from input text file
+std::vector<std::string>& getPaths(std::ifstream &concatInfoFile) {//, std::string concatInfoFilePath) {
 
+	std::vector<std::string> filePaths;
+
+	std::string line;
+	std::string ACQPath;
+	std::string DCLPath;
+
+	concatInfoFile.open("C:\\Users\\sk430\\Documents\\Visual Studio 2012\\Projects\\Concat-Convert\\Release\\concat_info.txt", std::ifstream::in);
+
+	std::getline(concatInfoFile, ACQPath);
+	std::getline(concatInfoFile, DCLPath);
+
+	//filePaths = {ACQPath, DCLPath};
+
+	filePaths.push_back(ACQPath);
+	filePaths.push_back(DCLPath);
+
+	//while(std::getline(concatInfoFile, line))
+	//	paths.push_back(line);				//filenames to vector of strings
+
+	return filePaths;
+}
 
 
 int main(int argc, char* argv[]) {
@@ -712,21 +740,44 @@ int main(int argc, char* argv[]) {
 	std::string currentAnimal_nodash;
 	std::vector<std::string> fnames_animal;
 
+	std::string concatInfoFilePath;
+	std::ifstream concatInfoFile;
+	std::vector<std::string> paths;
 
 
-	//Prompt user for source and destination paths:
- 	std::cout << "Enter full path where ACQ files are located: " << std::endl;
-	std::getline(std::cin, ACQFilePath);
-	std::cout << "PATH PROVIDED: " << ACQFilePath << "\n" << std::endl;
-	
-	std::cout << "Enter full path where you would like DCL files to be created: " << std::endl;
-	std::getline(std::cin, DCLFilePath);
-	std::cout << "PATH PROVIDED: " << DCLFilePath << "\n" << std::endl;
-	std::cout << "\n\n\n" << std::endl;
+	////Prompt user for source and destination paths:
+ //	std::cout << "Enter full path where ACQ files are located: " << std::endl;
+	//std::getline(std::cin, ACQFilePath);
+	//std::cout << "PATH PROVIDED: " << ACQFilePath << "\n" << std::endl;
+	//
+	//std::cout << "Enter full path where you would like DCL files to be created: " << std::endl;
+	//std::getline(std::cin, DCLFilePath);
+	//std::cout << "PATH PROVIDED: " << DCLFilePath << "\n" << std::endl;
+	//std::cout << "\n\n\n" << std::endl;
 
-	//obtain ACQ files from specified directory, and sort the files by date
+
+	//Prompt user, reminding them to fill out text file. Ask if they've filled it out, exit if no.
+	//TODO: create log file after program ends, indicating errors, etc. ? Write to DCLFilePath
+
+	////Prompt user for path where concat_info file is located
+ 	std::cout << "Enter the full path where your concatenation-info text file is located, including the file name.\nThis path should be of the form C:\\...\\...\\concat_info.txt.\n: " << std::endl;
+	std::getline(std::cin, concatInfoFilePath);
+
+	//make sure that the path the user provided is valid! If not, exit.
+
+	//concatInfoFile.open("C:\\Users\\sk430\\Documents\\Visual Studio 2012\\Projects\\Concat-Convert\\Release\\concat_info.txt", std::ifstream::in);
+	concatInfoFile.open(concatInfoFilePath, std::ifstream::in);
+
+
+	std::getline(concatInfoFile, ACQFilePath);
+	std::getline(concatInfoFile, DCLFilePath);
+
+
+	//obtain ACQ files from specified directory
 	std::vector<std::string> unsorted = listACQFiles(ACQFilePath);
 
+
+	//check if there are ACQ files
 	//if(unsorted.empty()) {		//if there are no ACQ files in the list
 	//	std::cout << "Either the selected ACQ directory is invalid, or there are no ACQ files in the selected directory.\nPlease try again." << std::endl;
 	//	//Sleep(3000);
@@ -738,13 +789,21 @@ int main(int argc, char* argv[]) {
 	//std::vector<std::string> fnames = sortACQFilesFiletime(unsorted);		//USE THIS to sort by Windows' last-modified time
 	
 	//print out files in order -- make sure they're in order of date!
-	for(int i = 0; i < fnames.size(); i++) {
-		std::cout << "FNAMES: " << fnames.at(i) << std::endl;
-	}
+	//for(int i = 0; i < fnames.size(); i++) {
+	//	std::cout << "FNAMES: " << fnames.at(i) << std::endl;
+	//}
 
 	//preparing to sort through animal data present in files, and separate files by
 	//which animals' data they contain.
-	std::vector<std::string> animals = listAnimals(fnames, DCLFilePath);		//obtain a list of animals in the ACQ files
+	std::vector<std::string> animals = listAnimals(fnames);//, DCLFilePath);		//obtain a list of animals in the ACQ files
+
+
+
+	////TRUNCATING HERE FOR TESTING
+	//animals.resize(10);
+	////TRUNCATING HERE 
+
+
 
 	for(int k = 0; k < animals.size(); k++) {
 		currentAnimal = animals.at(k);
