@@ -24,6 +24,49 @@
 
 /*
 	Running this script will concatenate all ACQ files in the current folder into DCL files (which are labeled by animal). 
+	To run this script:
+		1. Open the Visual Studio 2012 project file (Concat-Convert.sln) in Visual Studio 2012.
+		2. Build the project. 
+		3. Create a concatenation information TXT file. This file needs to be of a very specific format. 
+			 - Line 1: Absolute path to ACQ files
+			 - Line 2: Absolute path to DCL files
+			 - Line 3: A list of animal names you wish to concatenate, or "all" if you wish to concatenate all animals.
+			 - Line 4: The right-channel designation for all animals.
+			 - Line 5: The left-channel designation for all animals. 
+		4. In the Concat-Convert\Release folder, run Concat-Convert.exe. 
+		5. Follow the instructions in the script. 
+	For more detailed instructions, as well as an example with screenshots, see TODO CREATE DOCUMENT
+
+	PREREQUISITES:
+	 - ACQ filenames must contain a timestamp at the end. Filenames must therefore be of the form 
+		[beginning of name]YYYY-MM-DDTHH_MM_SS.acq
+	 - Each animal may only have 2 channels of data -- a right and a left.
+	 - Channel names must contain the name of the animal, followed by a designation indicating whether that
+		channel contains right- or left-hemisphere data.
+			Eg. if you have animal BM-54's right channel, and that animal's right-designation is "(r)", 
+			the name of the channel should be BM-54(r). 
+	 - The input ACQ files may contain up to 16 channels (the ACQ maximum). However, if a file contains a particular
+		animal's data, that file should contain BOTH channels for that animal. There should not be a file with just
+		ONE of the animal's data channels.
+
+		TODO OTHER PREREQUISITES?
+
+	OUTPUTS:
+	 - One DCL file for each animal will be created in the output path provided by the user. 
+		Each DCL file will be named according to the animal. For example, a file containing BM-54's data 
+		will be named BM-54.dcl.
+	 - Each DCL file will contain only two channels: a right-channel and a left-channel. These channels will be
+		named according to the naming convention specified by the ACQ files. A channel labeled BM-54(r) in the 
+		original ACQ files will also be labeled BM-54(r) in the resulting DCL file. 
+	 - One TXT file for each animal will be created in the output path provided by the user. This file will contain further
+		information about the file-concatenation -- which ACQ files were used to create the file, and which parts of the data
+		in the DCL file correspond to the data in the ACQ files. 
+	 - This TXT file will be named according to the animal as well. A TXTfile containing information about BM-54 will be named
+		BM-54_info.txt. 
+
+		TODO DOCUMENT OUTPUT LOG FILE FOR CONCATENATION PROCESS
+
+
 
 */
 
@@ -271,7 +314,7 @@ std::vector<std::string> sortACQFilesTimestamp(std::vector<std::string> fnames) 
 
 
 
-
+//TODO DOCUMENTATION
 //compares strings, case-insensitive
 bool icompare_pred(unsigned char a, unsigned char b)
 {
@@ -325,6 +368,9 @@ std::vector<std::string> listAnimals(std::vector<std::string> &fnames, std::stri
 	std::vector<std::string> animals;
 	std::string animalName;
 
+	std::size_t rEndPos;		//finding last index of r-designation
+	std::size_t lEndPos;
+
 	//std::string brokenList = DCLFilePath + "\\broken_files_list.txt";
 	//std::ofstream brokenFilesList(brokenList);
 
@@ -348,9 +394,17 @@ std::vector<std::string> listAnimals(std::vector<std::string> &fnames, std::stri
 					wChannelName = chInfo.label;	
 					strChannelName = wcharToString(wChannelName);
 
-					//find the animal's name (e.g. BM-40, BM-51...)
-					std::size_t endPos = strChannelName.find("(");
-					animalName = strChannelName.substr(0, endPos);
+					//find the animal's name (e.g. BM-40, BM-51...) minus it's R/L designation
+					//std::size_t endPos = strChannelName.find("(");			//REMOVING 5/9/17
+					rEndPos = strChannelName.find(rightFormat);		//finding last index of r-designation
+					lEndPos = strChannelName.find(leftFormat);		//finding last index of l-designation
+
+					//removing R/L portion, to obtain just the animal name (e.g. BM-50)
+					if(rEndPos != std::string::npos)
+						animalName = strChannelName.substr(0, rEndPos);			
+					else if(lEndPos != std::string::npos)
+						animalName = strChannelName.substr(0, lEndPos);	
+					//if neither can be found, then keep animalName the way it is, including whatever R/L designation it has
 					
 					//if animal isn't already in the animal name list, add it. 	
 					if (std::find(animals.begin(), animals.end(), animalName) == animals.end()) {
@@ -417,7 +471,7 @@ std::vector<std::string> listAnimals(std::vector<std::string> &fnames, std::stri
 
 
 
-
+//TODO DOCUMENTATION
 //obtains a list of filenames containing data for a given animal
 
 std::vector<std::string> getFnamesAnimal(std::vector<std::string> fnames, std::string currentAnimal, std::string currentAnimal_nodash) {
@@ -493,6 +547,7 @@ std::vector<std::string> getFnamesAnimal(std::vector<std::string> fnames, std::s
 }
 
 
+//TODO DOCUMENTATION
 //obtains the scan frequency
 int32_t getScanFreq(std::vector<std::string> fnames) {
 	std::string fname_str;
@@ -514,6 +569,7 @@ int32_t getScanFreq(std::vector<std::string> fnames) {
 }
 
 
+//TODO DOCUMENTATION
 //obtains the number of data points in a given animal's DCL file
 uint64_t getNumDataPoints(std::vector<std::string> fnames, std::string currentAnimal, std::string currentAnimal_nodash) {
 	std::string fname_str;
@@ -728,6 +784,7 @@ void writeSegment(long int dataCount, long int segmentSize, ACQFile acqFile, std
 }
 
 
+//TODO DOCUMENTATION
 //reads paths from input text file
 std::vector<std::string>& getPaths(std::ifstream &concatInfoFile) {//, std::string concatInfoFilePath) {
 
