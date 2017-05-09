@@ -756,34 +756,52 @@ std::vector<std::string>& getPaths(std::ifstream &concatInfoFile) {//, std::stri
 
 int main(int argc, char* argv[]) {
 
-	std::string fname_str, fname_animal_str;;
+	//filename variables for conversion between std::string and wchar_t
+	//BioPAC ACQ API requires wchar_t
+	std::string fname_str, fname_animal_str;
 	wchar_t *fname_w, *fname_animal_w;
 	
+	//filestream objects and ACQ file handles
 	ACQFile acqFile;
 	std::fstream dclFile;
 	std::ofstream dclInfoFile;
+	std::ifstream concatInfoFile;
 	//std::fstream brokenFilesList;
 
+	//ACQ channel-related variables
 	CHInfo chInfo;
 	wchar_t* wChannelName;
 	std::string strChannelName;
 
+	//relevant variables obtained from ACQ header
+	//Important for writing DCL header
 	int32_t scanFreq = 0;
-	int numSamples = 0;												//number of samples in a channel
-	int channelsCount = 1;											//must be at least one channel in file
-	uint64_t numDataPoints = 0;										//total number of data points in DCL file being created
+	int numSamples = 0;								//number of samples in a channel
+	int channelsCount = 1;							//must be at least one channel in file
+	uint64_t numDataPoints = 0;						//total number of data points in DCL file being created
 
-	double hoursInFile;
-	bool bm_flag = false;
+	double hoursInFile;								//number of hours of a particular animal's data in a given file.
+													//Stored in text file accompanying each DCL, so user knows how much
+													//of DCL data comes from each ACQ file
+	
+	bool bm_flag = false;							//flag indicates if a particular ACQ file contains data for the
+													//current animal
 
+	//filepath variables for filestreams
 	std::string concatInfoFilePath, ACQFilePath, DCLFilePath;
 
-	std::vector<std::string> filesToRemove;
-	std::string currentAnimal, currentAnimal_nodash, currentAnimal_nospace;
-	std::vector<std::string> fnames_animal;
+	//current-animal variables
+	std::vector<std::string> filesToRemove;									//ACQ files that do NOT contain data for the current animal
+																			//These filenames are to be removed from fnames_animal
+	
+	std::string currentAnimal, currentAnimal_nodash, currentAnimal_nospace;	//variants on currentAnimal, with dashes/spaces removed
+	std::vector<std::string> fnames_animal;									//list of filenames containing data for the current animal
 
-	std::ifstream concatInfoFile;
-	std::string animalsFromFile, animalFormat, rightFormat, leftFormat;
+	//information obtained from the user
+	std::string animalsFromFile, animalFormat, rightFormat, leftFormat;		//provided via the concatenation-info text file the user provides
+																			//specify the animals the user wants to concat, the format of 
+																			//right/left channel designation, etc.
+	//user's response to prompts
 	std::string response;
 
 
@@ -916,6 +934,7 @@ int main(int argc, char* argv[]) {
 		int chindex_left;
 		int chindex_right;
 
+		//creating stream for DCL-info text file. Contains information about which hours of data came from which ACQ file.
 		std::string DCLInfoFileName = DCLFilePath + "\\" + currentAnimal + "_info.txt";
 		std::ofstream dclInfoFile(DCLInfoFileName);
 
