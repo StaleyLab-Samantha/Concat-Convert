@@ -756,11 +756,8 @@ std::vector<std::string>& getPaths(std::ifstream &concatInfoFile) {//, std::stri
 
 int main(int argc, char* argv[]) {
 
-	std::string fname_str;
-	wchar_t *fname_w;
-
-	std::string fname_animal_str;
-	wchar_t *fname_animal_w;
+	std::string fname_str, fname_animal_str;;
+	wchar_t *fname_w, *fname_animal_w;
 	
 	ACQFile acqFile;
 	std::fstream dclFile;
@@ -777,25 +774,16 @@ int main(int argc, char* argv[]) {
 	uint64_t numDataPoints = 0;										//total number of data points in DCL file being created
 
 	double hoursInFile;
-
 	bool bm_flag = false;
 
-	std::string ACQFilePath;
-	std::string DCLFilePath;
+	std::string concatInfoFilePath, ACQFilePath, DCLFilePath;
 
 	std::vector<std::string> filesToRemove;
-	std::string currentAnimal;
-	std::string currentAnimal_nodash;
+	std::string currentAnimal, currentAnimal_nodash, currentAnimal_nospace;
 	std::vector<std::string> fnames_animal;
 
-	std::string concatInfoFilePath;
 	std::ifstream concatInfoFile;
-	
-	std::string animalsFromFile;
-	std::string animalFormat;
-	std::string rightFormat;
-	std::string leftFormat;
-
+	std::string animalsFromFile, animalFormat, rightFormat, leftFormat;
 	std::string response;
 
 
@@ -819,6 +807,10 @@ int main(int argc, char* argv[]) {
 	////Prompt user for path where concat_info file is located
  	std::cout << "Enter the full path where your concatenation-info text file is located, including the file name.\nThis path should be of the form C:\\...\\...\\concat_info.txt: \n" << std::endl;
 	std::getline(std::cin, concatInfoFilePath);
+
+	//Notify user that a list of animals is being obtained. If there are many files, this may take a couple of minutes.
+	std::cout << "\nObtaining a list of animals. If you have a large number of ACQ files, this may take a couple of minutes...\n" << std::endl;
+
 
 	//make sure that the path the user provided is valid! If not, exit.
 	//concatInfoFile.open("C:\\Users\\sk430\\Documents\\Visual Studio 2012\\Projects\\Concat-Convert\\Release\\concat_info.txt", std::ifstream::in);
@@ -857,6 +849,13 @@ int main(int argc, char* argv[]) {
 	//which animals' data they contain.
 	std::vector<std::string> animals = listAnimals(fnames, animalsFromFile, rightFormat, leftFormat);//, DCLFilePath);		//obtain a list of animals in the ACQ files
 
+	//TODO if list is empty, notify user and end program
+	if(animals.empty()) {		//if there are no ACQ files in the list
+		std::cout << "No animals were found in the provided ACQ files.\nPlease try again." << std::endl;
+		Sleep(3000);
+		return 0;
+	}
+
 	//provide the user with the list of animals to be concatenated, confirm that this is correct.
 	std::cout << "The following is a list of the animals you wish to concatenate." << std::endl;
 	for(int i = 0; i < animals.size(); i++) {
@@ -873,6 +872,10 @@ int main(int argc, char* argv[]) {
 	}
 	
 
+	//tell user they can leave, since all user-input has finished
+	std::cout << "Concatenation started -- this process may take a few hours.\nNo further input is required.";
+	std::cout << "This window will close when concatenation is complete.\n A log file will be written to " << DCLFilePath << std::endl;
+
 	////TRUNCATING HERE FOR TESTING
 	//animals.resize(10);
 	////TRUNCATING HERE 
@@ -882,7 +885,13 @@ int main(int argc, char* argv[]) {
 	for(int k = 0; k < animals.size(); k++) {
 		currentAnimal = animals.at(k);
 		currentAnimal_nodash = animals.at(k);
+		currentAnimal_nospace = animals.at(k);
+
+		//create versions of currentAnimal without dashes, spaces
 		currentAnimal_nodash.erase(std::remove(currentAnimal_nodash.begin(), currentAnimal_nodash.end(), '-'), currentAnimal_nodash.end());
+		currentAnimal_nospace.erase(std::remove(currentAnimal_nospace.begin(), currentAnimal_nospace.end(), ' '), currentAnimal_nospace.end());
+		
+		//print current animal so that user can watch progress of program
 		std::cout << "Current animal: " << currentAnimal << std::endl;
 		//std::cout << "Current animal, no dash: " << currentAnimal_nodash;
 
