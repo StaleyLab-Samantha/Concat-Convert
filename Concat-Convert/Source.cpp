@@ -811,28 +811,38 @@ int main(int argc, char* argv[]) {
 
 
 	//Prompt user, reminding them to fill out text file. Ask if they've filled it out, exit if no.
+	std::cout << "This script will concatenate ACQ files, and convert them to DCL files.\nBe sure to complete a concatenation-info text file before proceeding.";
+	std::cout << "Press Ctrl-C at any point to stop this script.\n" << std::endl;
+
 	//TODO: create log file after program ends, indicating errors, etc. ? Write to DCLFilePath
 
 	////Prompt user for path where concat_info file is located
- 	std::cout << "Enter the full path where your concatenation-info text file is located, including the file name.\nThis path should be of the form C:\\...\\...\\concat_info.txt.\n: " << std::endl;
+ 	std::cout << "Enter the full path where your concatenation-info text file is located, including the file name.\nThis path should be of the form C:\\...\\...\\concat_info.txt: \n" << std::endl;
 	std::getline(std::cin, concatInfoFilePath);
 
 	//make sure that the path the user provided is valid! If not, exit.
 	//concatInfoFile.open("C:\\Users\\sk430\\Documents\\Visual Studio 2012\\Projects\\Concat-Convert\\Release\\concat_info.txt", std::ifstream::in);
 	concatInfoFile.open(concatInfoFilePath, std::ifstream::in);
+	if(!concatInfoFile) {	//if stream has failed, notify user that they provided an incorrect path.
+		std::cout << "Failed to open file at: " << concatInfoFilePath << ".\nCheck that the path provided is correct, and try again." << std::endl;
+		Sleep(3000);
+		return 0;
+	}
+	
+	//ifstream opened successfully -- obtain first two lines of concat-info text file 
+	//(path to ACQ folder and DCL folder respectively)
 	std::getline(concatInfoFile, ACQFilePath);
 	std::getline(concatInfoFile, DCLFilePath);
 
 	//obtain ACQ files from specified directory
 	std::vector<std::string> unsorted = listACQFiles(ACQFilePath);
 
-
 	//check if there are ACQ files
-	//if(unsorted.empty()) {		//if there are no ACQ files in the list
-	//	std::cout << "Either the selected ACQ directory is invalid, or there are no ACQ files in the selected directory.\nPlease try again." << std::endl;
-	//	//Sleep(3000);
-	//	//return 0;
-	//}
+	if(unsorted.empty()) {		//if there are no ACQ files in the list
+		std::cout << "Either the selected ACQ directory is invalid, or there are no ACQ files in the selected directory.\nPlease try again." << std::endl;
+		Sleep(3000);
+		return 0;
+	}
 
 	//sort filenames by timestamp in filename
 	std::vector<std::string> fnames = sortACQFilesTimestamp(unsorted);		//USE THIS to sort by filename's timestamp
@@ -873,8 +883,8 @@ int main(int argc, char* argv[]) {
 		currentAnimal = animals.at(k);
 		currentAnimal_nodash = animals.at(k);
 		currentAnimal_nodash.erase(std::remove(currentAnimal_nodash.begin(), currentAnimal_nodash.end(), '-'), currentAnimal_nodash.end());
-		std::cout << "Current animal: " << currentAnimal;
-		std::cout << "Current animal, no dash: " << currentAnimal_nodash;
+		std::cout << "Current animal: " << currentAnimal << std::endl;
+		//std::cout << "Current animal, no dash: " << currentAnimal_nodash;
 
 		//obtain all ACQ filenames containing data for the current animal	
 		fnames_animal.clear();		//clear old info first!
