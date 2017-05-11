@@ -312,6 +312,19 @@ std::vector<std::string> sortACQFilesTimestamp(std::vector<std::string> fnames) 
 }
 
 
+//returns fnames sorted in alphabetical order!
+std::vector<std::string> sortACQFilesAlphabetical(std::vector<std::string> fnames) { 
+	//using list of names, create vector of pairs and sort by date
+	std::vector<std::string> sorted_fnames(fnames);
+	std::pair<std::string, std::string> file;
+
+	//sort pair-vector by filetime
+	std::sort(sorted_fnames.begin(), sorted_fnames.end());
+
+	return sorted_fnames;
+}
+
+
 
 
 //TODO DOCUMENTATION
@@ -913,8 +926,9 @@ int main(int argc, char* argv[]) {
 		return 0;
 	}
 
+	//OLD SORTING LOCATION
 	//sort filenames by timestamp in filename
-	std::vector<std::string> fnames = sortACQFilesTimestamp(unsorted);		//USE THIS to sort by filename's timestamp
+	//std::vector<std::string> fnames = sortACQFilesTimestamp(unsorted);		//USE THIS to sort by filename's timestamp
 	//std::vector<std::string> fnames = sortACQFilesFiletime(unsorted);		//USE THIS to sort by Windows' last-modified time
 	
 	//read next two lines of concat-info file, to determine which animals' data will be concatenated
@@ -924,7 +938,7 @@ int main(int argc, char* argv[]) {
 
 	//preparing to sort through animal data present in files, and separate files by
 	//which animals' data they contain.
-	std::vector<std::string> animals = listAnimals(fnames, animalsFromFile, rightFormat, leftFormat);//, DCLFilePath);		//obtain a list of animals in the ACQ files
+	std::vector<std::string> animals = listAnimals(unsorted, animalsFromFile, rightFormat, leftFormat);//, DCLFilePath);		//obtain a list of animals in the ACQ files
 
 	//TODO if list is empty, notify user and end program
 	if(animals.empty()) {		//if there are no ACQ files in the list
@@ -934,7 +948,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	//provide the user with the list of animals to be concatenated, confirm that this is correct.
-	std::cout << "The following is a list of the animals you wish to concatenate." << std::endl;
+	std::cout << "Animal-finding complete! The following is a list of the animals you wish to concatenate." << std::endl;
 	for(int i = 0; i < animals.size(); i++) {
 		std::cout << animals.at(i) << " ";
 	}
@@ -947,11 +961,34 @@ int main(int argc, char* argv[]) {
 		Sleep(3000);	//give user time to see message
 		return 0;
 	}
+
+	//allow user to choose file-sorting method
+	std::cout << "\nNext, choose a sorting method to sort your ACQ files by date. This is the order in which your files will be concatenated:\n";
+	std::cout << "\tOption 1: By timestamp in filename, formatted YYYY_MM_DDT_HH_MM_SS (recommended)" << std::endl;
+	std::cout << "\tOption 2: By Windows' \"Last-Modified\" time" << std::endl;
+	std::cout << "\tOption 3: In alphabetical order of filename (not recommended)" << std::endl;
+	std::cout << "Pick one of Options 1, 2, or 3 by entering \"1\", \"2\", or \"3\" now.\n" << std::endl;
+	std::getline(std::cin, response);
+
+	std::vector<std::string> fnames;	//sorted filenames
+	//sort filenames
+	if(response == "1")
+		fnames = sortACQFilesTimestamp(unsorted);		//USE THIS to sort by filename's timestamp
+	else if(response == "2")
+		fnames = sortACQFilesFiletime(unsorted);		//USE THIS to sort by Windows' last-modified time
+	else if(response == "3")
+		fnames = sortACQFilesAlphabetical(unsorted);	//USE THIS to sort alphabetically. TODO TEST
+	else
+	{
+		std::cout << "Invalid input for sorting method.\nPlease try again." << std::endl;
+		Sleep(3000);
+		return 0;
+	}
 	
 
 	//tell user they can leave, since all user-input has finished
-	std::cout << "Concatenation started -- this process may take a few hours.\nNo further input is required.";
-	std::cout << "This window will close when concatenation is complete.\n A log file will be written to " << DCLFilePath << std::endl;
+	std::cout << "Concatenation started -- this process may take a few hours. No further input is required. ";
+	std::cout << "This window will close when concatenation is complete. \nA log file will be written to " << DCLFilePath  << "\n" << std::endl;
 
 	////TRUNCATING HERE FOR TESTING
 	//animals.resize(10);
@@ -1000,7 +1037,7 @@ int main(int argc, char* argv[]) {
 		//for each of the filenames containing BM animal's data, write the relevant animal's data to the new DCL file.
 		for(int i = 0; i < fnames_animal.size(); i++) {
 			fname_animal_str = fnames_animal.at(i);
-			std::cout << "Current file being read and written: " << fname_animal_str << std::endl;
+			std::cout << "Current file being read/written: " << fname_animal_str << std::endl;
 			fname_animal_w = stringToWchar(fname_animal_str);
 
 			//open file
