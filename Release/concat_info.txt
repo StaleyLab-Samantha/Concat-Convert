@@ -1,5 +1,5 @@
-E:\Ed Dudek Neonatal Data\Bastar EEG Data NEW
+C:\Users\sk430\Desktop\ACQ Files
 C:\Users\sk430\Desktop\DCL Files
 All
-Right
-Left
+(r)
+(l)

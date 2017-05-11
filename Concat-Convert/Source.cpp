@@ -408,7 +408,8 @@ std::vector<std::string> listAnimals(std::vector<std::string> &fnames, std::stri
 					
 					//if animal isn't already in the animal name list, add it. 	
 					if (std::find(animals.begin(), animals.end(), animalName) == animals.end()) {
-						animals.push_back(animalName);	
+						if(animalName != "")	//make sure the string isn't empty!
+							animals.push_back(animalName);	
 					}
 				}
 				closeACQFile(&acqFile);
@@ -892,6 +893,7 @@ int main(int argc, char* argv[]) {
 	concatInfoFile.open(concatInfoFilePath, std::ifstream::in);
 	if(!concatInfoFile) {	//if stream has failed, notify user that they provided an incorrect path.
 		std::cout << "Failed to open file at: " << concatInfoFilePath << ".\nCheck that the path provided is correct, and try again." << std::endl;
+		//TOOD press key to quit?
 		Sleep(3000);
 		return 0;
 	}
@@ -926,7 +928,7 @@ int main(int argc, char* argv[]) {
 
 	//TODO if list is empty, notify user and end program
 	if(animals.empty()) {		//if there are no ACQ files in the list
-		std::cout << "No animals were found in the provided ACQ files.\nPlease try again." << std::endl;
+		std::cout << "No animals were found in the provided ACQ files with the specified format.\nPlease check that the format specified is correct, and try again." << std::endl;
 		Sleep(3000);
 		return 0;
 	}

@@ -1,29 +1,29 @@
-﻿Build started 5/9/2017 1:52:24 PM.
+﻿Build started 5/11/2017 10:32:38 AM.
      1>Project "C:\Users\sk430\Documents\Visual Studio 2012\Projects\Concat-Convert\Concat-Convert\Concat-Convert.vcxproj" on node 2 (Rebuild target(s)).
      1>ClCompile:
          C:\Program Files\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I"C:\Users\sk430\Documents\BIOPAC Systems, Inc\BIOPAC File API 3.2" /Zi /nologo /W3 /WX- /sdl /O2 /Oi /Oy- /GL /D WIN32 /D NDEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc110.pdb" /Gd /TP /wd4996 /analyze- /errorReport:prompt Source.cpp
          Source.cpp
-     1>Source.cpp(82): warning C4172: returning address of local variable or temporary
-     1>Source.cpp(187): warning C4018: '<' : signed/unsigned mismatch
-     1>Source.cpp(203): warning C4018: '<' : signed/unsigned mismatch
-     1>Source.cpp(251): warning C4018: '<' : signed/unsigned mismatch
-     1>Source.cpp(264): warning C4018: '<' : signed/unsigned mismatch
-     1>Source.cpp(338): warning C4018: '<' : signed/unsigned mismatch
-     1>Source.cpp(463): warning C4018: '<' : signed/unsigned mismatch
-     1>Source.cpp(471): warning C4244: '=' : conversion from 'double' to 'int32_t', possible loss of data
-     1>Source.cpp(501): warning C4018: '<' : signed/unsigned mismatch
-     1>Source.cpp(444): warning C4101: 'fname_animal_w' : unreferenced local variable
-     1>Source.cpp(521): warning C4244: '=' : conversion from 'double' to 'int32_t', possible loss of data
-     1>Source.cpp(542): warning C4018: '<' : signed/unsigned mismatch
-     1>Source.cpp(616): warning C4101: 'dataStart' : unreferenced local variable
-     1>Source.cpp(723): warning C4244: 'initializing' : conversion from 'double' to 'uint16_t', possible loss of data
-     1>Source.cpp(724): warning C4244: 'initializing' : conversion from 'double' to 'uint16_t', possible loss of data
-     1>Source.cpp(766): warning C4172: returning address of local variable or temporary
-     1>Source.cpp(892): warning C4018: '<' : signed/unsigned mismatch
-     1>Source.cpp(916): warning C4018: '<' : signed/unsigned mismatch
-     1>Source.cpp(943): warning C4244: 'initializing' : conversion from 'uint64_t' to 'long', possible loss of data
-     1>Source.cpp(955): warning C4018: '<' : signed/unsigned mismatch
-     1>Source.cpp(775): warning C4101: 'fname_w' : unreferenced local variable
+     1>Source.cpp(125): warning C4172: returning address of local variable or temporary
+     1>Source.cpp(230): warning C4018: '<' : signed/unsigned mismatch
+     1>Source.cpp(246): warning C4018: '<' : signed/unsigned mismatch
+     1>Source.cpp(294): warning C4018: '<' : signed/unsigned mismatch
+     1>Source.cpp(307): warning C4018: '<' : signed/unsigned mismatch
+     1>Source.cpp(381): warning C4018: '<' : signed/unsigned mismatch
+     1>Source.cpp(505): warning C4018: '<' : signed/unsigned mismatch
+     1>Source.cpp(513): warning C4244: '=' : conversion from 'double' to 'int32_t', possible loss of data
+     1>Source.cpp(543): warning C4018: '<' : signed/unsigned mismatch
+     1>Source.cpp(486): warning C4101: 'fname_animal_w' : unreferenced local variable
+     1>Source.cpp(564): warning C4244: '=' : conversion from 'double' to 'int32_t', possible loss of data
+     1>Source.cpp(586): warning C4018: '<' : signed/unsigned mismatch
+     1>Source.cpp(660): warning C4101: 'dataStart' : unreferenced local variable
+     1>Source.cpp(767): warning C4244: 'initializing' : conversion from 'double' to 'uint16_t', possible loss of data
+     1>Source.cpp(768): warning C4244: 'initializing' : conversion from 'double' to 'uint16_t', possible loss of data
+     1>Source.cpp(811): warning C4172: returning address of local variable or temporary
+     1>Source.cpp(938): warning C4018: '<' : signed/unsigned mismatch
+     1>Source.cpp(962): warning C4018: '<' : signed/unsigned mismatch
+     1>Source.cpp(989): warning C4244: 'initializing' : conversion from 'uint64_t' to 'long', possible loss of data
+     1>Source.cpp(1001): warning C4018: '<' : signed/unsigned mismatch
+     1>Source.cpp(820): warning C4101: 'fname_w' : unreferenced local variable
        Link:
          C:\Program Files\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\sk430\Documents\Visual Studio 2012\Projects\Concat-Convert\Release\Concat-Convert.exe" /INCREMENTAL:NO /NOLOGO /LIBPATH:"C:\Users\sk430\Documents\BIOPAC Systems, Inc\BIOPAC File API 3.2" acqfile.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\sk430\Documents\Visual Studio 2012\Projects\Concat-Convert\Release\Concat-Convert.pdb" /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\sk430\Documents\Visual Studio 2012\Projects\Concat-Convert\Release\Concat-Convert.lib" /MACHINE:X86 /SAFESEH Release\Source.obj
          Generating code
@@ -33,4 +33,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:06.93
+Time Elapsed 00:00:01.91
