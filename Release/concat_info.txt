@@ -1,5 +1,5 @@
-C:\Users\sk430\Desktop\ACQ Files
-C:\Users\sk430\Desktop\DCL Files
+C:\Users\sk430\Desktop\ACQ Files\Dudek
+C:\Users\sk430\Desktop\DCL Files\Dudek
 All
-(r)
-(l)
+Right
+Left
