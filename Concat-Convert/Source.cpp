@@ -645,11 +645,11 @@ uint64_t getNumDataPoints(std::vector<std::string> fnames, std::string currentAn
 */
 void writeDCLHeader(std::fstream &file, int32_t &scanFreq, uint64_t &numDataPoints, std::string &animal, std::string &leftFormat, std::string &rightFormat, std::string DCLFilePath) {
 
-	//std::string animal_nospace(animal);
-	//animal_nospace.erase(std::remove(animal_nospace.begin(), animal_nospace.end(), ' '), animal_nospace.end());
+	std::string animal_nospace(animal);
+	animal_nospace.erase(std::remove(animal_nospace.begin(), animal_nospace.end(), ' '), animal_nospace.end());
 
-	//std::string DCLFileName = DCLFilePath + "\\" + animal_nospace + ".dcl";
-	std::string DCLFileName = DCLFilePath + "\\" + animal + ".dcl";
+	std::string DCLFileName = DCLFilePath + "\\" + animal_nospace + ".dcl";
+	//std::string DCLFileName = DCLFilePath + "\\" + animal + ".dcl";
 	file.open(DCLFileName, std::fstream::binary | std::fstream::out | std::fstream::in | std::fstream::trunc);
 
 	const float fileVersion = 2.6f;
@@ -1041,7 +1041,7 @@ int main(int argc, char* argv[]) {
 		int chindex_right;
 
 		//creating stream for DCL-info text file. Contains information about which hours of data came from which ACQ file.
-		std::string DCLInfoFileName = DCLFilePath + "\\" + currentAnimal + "_info.txt";
+		std::string DCLInfoFileName = DCLFilePath + "\\" + currentAnimal_nospace + "_info.txt";
 		std::ofstream dclInfoFile(DCLInfoFileName);
 
 		//for each of the filenames containing BM animal's data, write the relevant animal's data to the new DCL file.
