@@ -857,9 +857,9 @@ std::vector<std::string>& getPaths(std::ifstream &concatInfoFile) {//, std::stri
 	return filePaths;
 }
 
-
-std::vector<std::string> getAnimalCorrections(std::ifstream &concatInfoFile, std::vector<std::string> animals, std::string rightFormat, std::string leftFormat) {
-	std::vector<std::string> corrected_animals(animals);
+//TODO only allows one correction per animal, be sure to document this!
+std::vector<std::pair<std::string, std::string>> getAnimalCorrections(std::ifstream &concatInfoFile) {
+	std::vector<std::pair<std::string, std::string>> corrections;
 	std::string line;
 
 	std::string wrongAnimalName;
@@ -874,12 +874,11 @@ std::vector<std::string> getAnimalCorrections(std::ifstream &concatInfoFile, std
 		wrongAnimalName = line.substr(0, pos);
 		nameCorrection = line.substr(pos+2);	//pos+1 if single character, pos+2 b/c 2 characters in "||"
 
-		//find and replace wrongAnimalName with nameCorrection in corrected_animals
-		std::replace(corrected_animals.begin(), corrected_animals.end(), wrongAnimalName, nameCorrection);
-
+		//add pair to list
+		corrections.push_back(std::make_pair(wrongAnimalName, nameCorrection));
 	}
 
-	return corrected_animals;
+	return corrections;
 }
 
 //TODO organize and document all variable definitions, move all to top
@@ -1021,8 +1020,8 @@ int main(int argc, char* argv[]) {
 	//if user gives any other response, proceed
 
 	//TODO getting corrections -- maybe correct animal list before showing to user?
-	//std::vector<std::string> corrected_animals;
-	//corrected_animals = getAnimalCorrections(concatInfoFile, animals, rightFormat, leftFormat);
+	std::vector<std::pair<std::string, std::string>> animal_corrections;
+	animal_corrections = getAnimalCorrections(concatInfoFile);
 
 	//allow user to choose file-sorting method
 	std::cout << "\nNext, choose a sorting method to sort your ACQ files by date. This is the order in which your files will be concatenated:\n";
@@ -1062,10 +1061,7 @@ int main(int argc, char* argv[]) {
 
 
 	//beginning concatenation
-	//for(int k = 0; k < corrected_animals.size(); k++) {
-	//	currentAnimal = corrected_animals.at(k);
-	//	currentAnimal_nodash = corrected_animals.at(k);
-	//	currentAnimal_nospace = corrected_animals.at(k);
+
 	for(int k = 0; k < animals.size(); k++) {
 		currentAnimal = animals.at(k);
 		currentAnimal_nodash = animals.at(k);
@@ -1122,7 +1118,7 @@ int main(int argc, char* argv[]) {
 			if(initACQFile(fname_animal_w, &acqFile)) {
 
 				//so user can see progress of program
-				std::cout << "\tFile-open successful" << std::endl;
+				std::cout << "\tFile-open successful." << std::endl;
 
 				//for each channel in file, search for the animal's left/right channels.
 				for(int j = 0; j < acqFile.numChannels; j++) {
@@ -1167,12 +1163,16 @@ int main(int argc, char* argv[]) {
 					dataCount += segmentSize;
 					//std::cout << "\tPosition: " << dataCount << ", out of " << numPointsPerChannel << std::endl;
 				}
+
+
 				closeACQFile(&acqFile);											///CLOSING FILE
+				//so user can see progress of program
+				std::cout << "\tData-write from file is complete." << std::endl;
 				dataCount = 1;
 			}
 			else {	//if opening ACQ file failed with BioPAC API
 				//so user can see progress of program
-				std::cout << "\tFile-open failed" << std::endl;
+				std::cout << "\tFile-open failed." << std::endl;
 			}
 		}
 

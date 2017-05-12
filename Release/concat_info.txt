@@ -1,5 +1,6 @@
-C:\Users\sk430\Desktop\ACQ Files\BM
-C:\Users\sk430\Desktop\DCL Files\BM
+C:\Users\sk430\Desktop\ACQ Files\Dudek
+C:\Users\sk430\Desktop\DCL Files\Dudek
 All
-(r)
-(l)
+Right
+Left
+EEG-028 ||EEG028 
