@@ -37,6 +37,28 @@
 		5. Follow the instructions in the script. 
 	For more detailed instructions, as well as an example with screenshots, see TODO CREATE DOCUMENT
 
+	CONCAT-INFO TEXT FILE -- FURTHER INFO
+	 - The file should be a simple Notepad text file, with extension ".txt"
+	 - In Line 3: it is safer to specify "All" to search for all animals of the format you specified. 
+		Otherwise, if you make a mistake while specifying animal names, the script may not be able to find any 
+		of the animals you specified.
+	 - In Line 3: when specifying animal-names:
+			Be sure to include all whitespace at the end of the animal name! For example, if you have channel-names
+				"EEG-028 Right"
+				"EEG-028 Left"
+				"EEG-030 Right"
+				"EEG-030 Left"
+			and you wish to concatenate both EEG-028's and EEG-030's data, lines 3, 4, and 5 should look like the following:
+				EEG-028[SPACE],EEG-030[SPACE]
+				Right
+				Left
+			where spaces are included ONLY where indicated by [SPACE]! Do NOT place the space at the beginning of the R/L
+			designation instead.
+	 - In Lines 4/5: when specifying R/L designation
+			Note that R/L designation is CASE-SENSITIVE! Write the R/L designation EXACTLY as it appears in the channel-
+			names of the files you wish to concatenate.
+
+
 	PREREQUISITES:
 	 - ACQ filenames must contain a timestamp at the end. Filenames must therefore be of the form 
 		[beginning of name]YYYY-MM-DDTHH_MM_SS.acq
@@ -436,6 +458,7 @@ std::vector<std::string> listAnimals(std::vector<std::string> &fnames, std::stri
 
 		//remove any spaces the user may have added to the comma-separated list
 		//what happens if there is whitespace in the animal name itself??
+		//REMOVING in case there is whitespace in animal name
 		//animalsFromFile.erase(std::remove( animalsFromFile.begin(), animalsFromFile.end(), ' '), animalsFromFile.end());
 
 		std::stringstream ss(animalsFromFile);
@@ -907,10 +930,6 @@ int main(int argc, char* argv[]) {
  	std::cout << "Enter the full path where your concatenation-info text file is located, including the file name.\nThis path should be of the form C:\\...\\...\\concat_info.txt: \n" << std::endl;
 	std::getline(std::cin, concatInfoFilePath);
 
-	//Notify user that a list of animals is being obtained. If there are many files, this may take a couple of minutes.
-	std::cout << "\nObtaining a list of animals. If you have a large number of ACQ files, this may take a couple of minutes...\n" << std::endl;
-
-
 	//make sure that the path the user provided is valid! If not, exit.
 	//concatInfoFile.open("C:\\Users\\sk430\\Documents\\Visual Studio 2012\\Projects\\Concat-Convert\\Release\\concat_info.txt", std::ifstream::in);
 	concatInfoFile.open(concatInfoFilePath, std::ifstream::in);
@@ -920,6 +939,9 @@ int main(int argc, char* argv[]) {
 		Sleep(3000);
 		return 0;
 	}
+
+	//Notify user that a list of animals is being obtained. If there are many files, this may take a couple of minutes.
+	std::cout << "\nObtaining a list of animals. If you have a large number of ACQ files, this may take a couple of minutes...\n" << std::endl;
 	
 	//ifstream opened successfully -- obtain first two lines of concat-info text file 
 	//(path to ACQ folder and DCL folder respectively)
@@ -962,15 +984,19 @@ int main(int argc, char* argv[]) {
 	for(int i = 0; i < animals.size(); i++) {
 		std::cout << animals.at(i) << " ";
 	}
-	std::cout << "\n\nIs this list correct? (Y/N)" << std::endl;
+	std::cout << "\n\nIs this list correct? (Y/N)\n" << std::endl;
 	std::getline(std::cin, response);
 
 	//if user answers that list is not correct, end concatenation and notify the user.
-	if(icompare(response, "n")) {
+	if(icompare(response, "n") || icompare(response, "no")) {	//if response is N/n/no/NO/No/nO
 		std::cout << "You indicated this animal-list is not correct. Stopping concatenation.\nPlease try again." << std::endl;
 		Sleep(3000);	//give user time to see message
 		return 0;
 	}
+	//if user gives any other response, proceed
+
+	//TODO getting corrections -- maybe correct animal list before showing to user?
+
 
 	//allow user to choose file-sorting method
 	std::cout << "\nNext, choose a sorting method to sort your ACQ files by date. This is the order in which your files will be concatenated:\n";
@@ -1000,6 +1026,10 @@ int main(int argc, char* argv[]) {
 	std::cout << "Concatenation started -- this process may take a few hours. No further input is required. ";
 	std::cout << "This window will close when concatenation is complete. \nA log file will be written to " << DCLFilePath  << "\n" << std::endl;
 
+
+
+
+
 	////TRUNCATING HERE FOR TESTING
 	//animals.resize(10);
 	////TRUNCATING HERE 
@@ -1016,12 +1046,18 @@ int main(int argc, char* argv[]) {
 		currentAnimal_nospace.erase(std::remove(currentAnimal_nospace.begin(), currentAnimal_nospace.end(), ' '), currentAnimal_nospace.end());
 		
 		//print current animal so that user can watch progress of program
-		std::cout << "Current animal: " << currentAnimal << std::endl;
+		std::cout << "\n---------------------\n\nCurrent animal: " << currentAnimal << std::endl;
 		//std::cout << "Current animal, no dash: " << currentAnimal_nodash;
 
 		//obtain all ACQ filenames containing data for the current animal	
 		fnames_animal.clear();		//clear old info first!
 		fnames_animal = getFnamesAnimal(fnames, currentAnimal, currentAnimal_nodash, leftFormat, rightFormat);
+
+		//notify user that animal's data was not found, and skip to next animal
+		if(fnames_animal.empty()) {		//if there are no ACQ files in the list for this animal
+			std::cout << "No ACQ files containing " << currentAnimal << "'s data were found. Please check that the format specified is correct.\n"<< std::endl;
+			continue;					//do not execute the rest, skip to next animal
+		}
 
 		//get information necessary for writing DCL header
 		scanFreq = getScanFreq(fnames_animal);			//get scan frequency (same for all files, usually 500 Hz)
@@ -1111,6 +1147,11 @@ int main(int argc, char* argv[]) {
 		numDataPoints = 0;
 	}
 
+	Sleep(5000);
+
+
+	//TODO concatenation-is-complete message
+	//TODO user presses "quit" or something, then return, so that user can see output...?
 	return 0;
 
 }
