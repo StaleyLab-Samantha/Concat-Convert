@@ -858,6 +858,31 @@ std::vector<std::string>& getPaths(std::ifstream &concatInfoFile) {//, std::stri
 }
 
 
+std::vector<std::string> getAnimalCorrections(std::ifstream &concatInfoFile, std::vector<std::string> animals, std::string rightFormat, std::string leftFormat) {
+	std::vector<std::string> corrected_animals(animals);
+	std::string line;
+
+	std::string wrongAnimalName;
+	std::string nameCorrection;
+
+	size_t pos;
+
+	//for each remaining line of concatInfoFile
+	while(std::getline(concatInfoFile, line)) {
+		//"||" will separate old from new!
+		pos = line.find("||");
+		wrongAnimalName = line.substr(0, pos);
+		nameCorrection = line.substr(pos+2);	//pos+1 if single character, pos+2 b/c 2 characters in "||"
+
+		//find and replace wrongAnimalName with nameCorrection in corrected_animals
+		std::replace(corrected_animals.begin(), corrected_animals.end(), wrongAnimalName, nameCorrection);
+
+	}
+
+	return corrected_animals;
+}
+
+//TODO organize and document all variable definitions, move all to top
 int main(int argc, char* argv[]) {
 
 	//filename variables for conversion between std::string and wchar_t
@@ -996,7 +1021,8 @@ int main(int argc, char* argv[]) {
 	//if user gives any other response, proceed
 
 	//TODO getting corrections -- maybe correct animal list before showing to user?
-
+	//std::vector<std::string> corrected_animals;
+	//corrected_animals = getAnimalCorrections(concatInfoFile, animals, rightFormat, leftFormat);
 
 	//allow user to choose file-sorting method
 	std::cout << "\nNext, choose a sorting method to sort your ACQ files by date. This is the order in which your files will be concatenated:\n";
@@ -1036,6 +1062,10 @@ int main(int argc, char* argv[]) {
 
 
 	//beginning concatenation
+	//for(int k = 0; k < corrected_animals.size(); k++) {
+	//	currentAnimal = corrected_animals.at(k);
+	//	currentAnimal_nodash = corrected_animals.at(k);
+	//	currentAnimal_nospace = corrected_animals.at(k);
 	for(int k = 0; k < animals.size(); k++) {
 		currentAnimal = animals.at(k);
 		currentAnimal_nodash = animals.at(k);
@@ -1082,14 +1112,19 @@ int main(int argc, char* argv[]) {
 
 		//for each of the filenames containing BM animal's data, write the relevant animal's data to the new DCL file.
 		for(int i = 0; i < fnames_animal.size(); i++) {
+			//conversion from str to wchar_t for BioPAC ACQ API
 			fname_animal_str = fnames_animal.at(i);
-			std::cout << "Current file being read/written: " << fname_animal_str << std::endl;
+			//so user can see progress of program
+			std::cout << "Current file being read/written: " << fname_animal_str << std::endl;		//TODO PRINT STATEMENT NEEDS TO BE HERE??? FOR ACQ FILES TO OPEN
 			fname_animal_w = stringToWchar(fname_animal_str);
 
-			//open file
+			//open ACQ file
 			if(initACQFile(fname_animal_w, &acqFile)) {
 
-				//for each channel in file, search for BM-40 left/right.
+				//so user can see progress of program
+				std::cout << "\tFile-open successful" << std::endl;
+
+				//for each channel in file, search for the animal's left/right channels.
 				for(int j = 0; j < acqFile.numChannels; j++) {
 					if(getChannelInfo(j, &acqFile, &chInfo)) { 
 						wChannelName = chInfo.label;	
@@ -1134,6 +1169,10 @@ int main(int argc, char* argv[]) {
 				}
 				closeACQFile(&acqFile);											///CLOSING FILE
 				dataCount = 1;
+			}
+			else {	//if opening ACQ file failed with BioPAC API
+				//so user can see progress of program
+				std::cout << "\tFile-open failed" << std::endl;
 			}
 		}
 
