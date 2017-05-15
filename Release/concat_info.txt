@@ -1,6 +1,6 @@
-C:\Users\sk430\Desktop\ACQ Files\Dudek
-C:\Users\sk430\Desktop\DCL Files\Dudek
-All
-Right
-Left
-EEG-028 ||EEG028 
+C:\Users\sk430\Desktop\ACQ Files\BM_corrections
+C:\Users\sk430\Desktop\DCL Files\BM_corrections
+BM-15,BM-17
+(r)
+(l)
+BM17||BM-17

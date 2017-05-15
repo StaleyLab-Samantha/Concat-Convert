@@ -511,7 +511,8 @@ std::vector<std::string> listAnimals(std::vector<std::string> &fnames, std::stri
 //TODO DOCUMENTATION
 //obtains a list of filenames containing data for a given animal
 
-std::vector<std::string> getFnamesAnimal(std::vector<std::string> fnames, std::string currentAnimal, std::string currentAnimal_nodash, std::string leftFormat, std::string rightFormat) {
+std::vector<std::string> getFnamesAnimal(std::vector<std::string> fnames, std::string currentAnimal, std::string currentAnimal_nodash, 
+										 std::pair<std::string, std::string> currentAnimal_correction, std::string leftFormat, std::string rightFormat) {
 	ACQFile acqFile;
 	CHInfo chInfo;
 
@@ -566,6 +567,12 @@ std::vector<std::string> getFnamesAnimal(std::vector<std::string> fnames, std::s
 					bm_flag = true;									//set flag to true
 					numDataPoints += numSamples;					//total data points = sum of all channels' data points
 				}
+				else if((strChannelName.compare(currentAnimal_correction.first + leftFormat)) || (strChannelName.compare(currentAnimal_correction.first + rightFormat)) == 0) {
+					bm_flag = true;									//set flag to true
+					numDataPoints += numSamples;					//total data points = sum of all channels' data points
+					//return fnames_animal;
+				}
+
 			}
 			//if this file does not have a channel representing animal BM, remove from list
 			if(!bm_flag) {
@@ -923,25 +930,16 @@ int main(int argc, char* argv[]) {
 																			//These filenames are to be removed from fnames_animal
 	
 	std::string currentAnimal, currentAnimal_nodash, currentAnimal_nospace;	//variants on currentAnimal, with dashes/spaces removed
+	std::pair<std::string, std::string> currentAnimal_correction;			//user-supplied corrected version of a given animal name
 	std::vector<std::string> fnames_animal;									//list of filenames containing data for the current animal
-
+	
+	
 	//information obtained from the user
 	std::string animalsFromFile, animalFormat, rightFormat, leftFormat;		//provided via the concatenation-info text file the user provides
 																			//specify the animals the user wants to concat, the format of 
 																			//right/left channel designation, etc.
 	//user's response to prompts
 	std::string response;
-
-
-	////Prompt user for source and destination paths:
- //	std::cout << "Enter full path where ACQ files are located: " << std::endl;
-	//std::getline(std::cin, ACQFilePath);
-	//std::cout << "PATH PROVIDED: " << ACQFilePath << "\n" << std::endl;
-	//
-	//std::cout << "Enter full path where you would like DCL files to be created: " << std::endl;
-	//std::getline(std::cin, DCLFilePath);
-	//std::cout << "PATH PROVIDED: " << DCLFilePath << "\n" << std::endl;
-	//std::cout << "\n\n\n" << std::endl;
 
 
 	//Prompt user, reminding them to fill out text file. Ask if they've filled it out, exit if no.
@@ -965,7 +963,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	//Notify user that a list of animals is being obtained. If there are many files, this may take a couple of minutes.
-	std::cout << "\nObtaining a list of animals. If you have a large number of ACQ files, this may take a couple of minutes...\n" << std::endl;
+	std::cout << "\nObtaining a list of animals (without corrections). If you have a large number of ACQ files, this may take a couple of minutes...\n" << std::endl;
 	
 	//ifstream opened successfully -- obtain first two lines of concat-info text file 
 	//(path to ACQ folder and DCL folder respectively)
@@ -982,11 +980,6 @@ int main(int argc, char* argv[]) {
 		return 0;
 	}
 
-	//OLD SORTING LOCATION
-	//sort filenames by timestamp in filename
-	//std::vector<std::string> fnames = sortACQFilesTimestamp(unsorted);		//USE THIS to sort by filename's timestamp
-	//std::vector<std::string> fnames = sortACQFilesFiletime(unsorted);		//USE THIS to sort by Windows' last-modified time
-	
 	//read next two lines of concat-info file, to determine which animals' data will be concatenated
 	std::getline(concatInfoFile, animalsFromFile);		//user-specified animals to concat, or "All"
 	std::getline(concatInfoFile, rightFormat);			//format of right-channel designation
@@ -996,7 +989,11 @@ int main(int argc, char* argv[]) {
 	//which animals' data they contain.
 	std::vector<std::string> animals = listAnimals(unsorted, animalsFromFile, rightFormat, leftFormat);//, DCLFilePath);		//obtain a list of animals in the ACQ files
 
-	//TODO if list is empty, notify user and end program
+	//obtaining animal corrections
+	std::vector<std::pair<std::string, std::string>> animal_corrections;
+	animal_corrections = getAnimalCorrections(concatInfoFile);
+
+	//if list is empty, notify user and end program
 	if(animals.empty()) {		//if there are no ACQ files in the list
 		std::cout << "No animals were found in the provided ACQ files with the specified format.\nPlease check that the format specified is correct, and try again." << std::endl;
 		Sleep(3000);
@@ -1004,24 +1001,26 @@ int main(int argc, char* argv[]) {
 	}
 
 	//provide the user with the list of animals to be concatenated, confirm that this is correct.
-	std::cout << "Animal-finding complete! The following is a list of the animals you wish to concatenate." << std::endl;
+	std::cout << "\n---------------------\n\n" << std::endl;
+	std::cout << "Animal-finding complete! The following is a list of the animals you wish to concatenate (without corrections):" << std::endl;
 	for(int i = 0; i < animals.size(); i++) {
 		std::cout << animals.at(i) << " ";
 	}
-	std::cout << "\n\nIs this list correct? (Y/N)\n" << std::endl;
+	//getting corrections, show them to user
+	std::cout << "\nThe following is a list of corrections to make to the above animal-list:\n" << std::endl;
+	for(int i = 0; i < animal_corrections.size(); i++) {
+		std::cout << i+1 << ". " << animal_corrections.at(i).first << " will be corrected to: " << animal_corrections.at(i).second << std::endl;
+	}
+	std::cout << "\n\nIs this correct? (Y/N)\n" << std::endl;
 	std::getline(std::cin, response);
 
 	//if user answers that list is not correct, end concatenation and notify the user.
 	if(icompare(response, "n") || icompare(response, "no")) {	//if response is N/n/no/NO/No/nO
-		std::cout << "You indicated this animal-list is not correct. Stopping concatenation.\nPlease try again." << std::endl;
+		std::cout << "You indicated this information is not correct. Stopping concatenation.\nPlease try again." << std::endl;
 		Sleep(3000);	//give user time to see message
 		return 0;
 	}
 	//if user gives any other response, proceed
-
-	//TODO getting corrections -- maybe correct animal list before showing to user?
-	std::vector<std::pair<std::string, std::string>> animal_corrections;
-	animal_corrections = getAnimalCorrections(concatInfoFile);
 
 	//allow user to choose file-sorting method
 	std::cout << "\nNext, choose a sorting method to sort your ACQ files by date. This is the order in which your files will be concatenated:\n";
@@ -1046,38 +1045,41 @@ int main(int argc, char* argv[]) {
 		return 0;
 	}
 	
-
 	//tell user they can leave, since all user-input has finished
-	std::cout << "Concatenation started -- this process may take a few hours. No further input is required. ";
+	std::cout << "\nConcatenation started -- this process may take a few hours. No further input is required. ";
 	std::cout << "This window will close when concatenation is complete. \nA log file will be written to " << DCLFilePath  << "\n" << std::endl;
-
-
-
-
 
 	////TRUNCATING HERE FOR TESTING
 	//animals.resize(10);
 	////TRUNCATING HERE 
 
 
-	//beginning concatenation
+	//TODO CONSISTENT NAMING SCHEME: all to camelcase, no underscores!
 
+	//beginning concatenation
 	for(int k = 0; k < animals.size(); k++) {
 		currentAnimal = animals.at(k);
 		currentAnimal_nodash = animals.at(k);
 		currentAnimal_nospace = animals.at(k);
+		currentAnimal_correction = std::make_pair("", "");
+
+		//obtain user-supplied correction for current animal, if there is one
+		for(int m = 0; m < animal_corrections.size(); m++) {
+			if(currentAnimal == animal_corrections.at(m).first)
+				currentAnimal_correction = animal_corrections.at(m);
+		}
 
 		//create versions of currentAnimal without dashes, spaces
 		currentAnimal_nodash.erase(std::remove(currentAnimal_nodash.begin(), currentAnimal_nodash.end(), '-'), currentAnimal_nodash.end());
 		currentAnimal_nospace.erase(std::remove(currentAnimal_nospace.begin(), currentAnimal_nospace.end(), ' '), currentAnimal_nospace.end());
 		
 		//print current animal so that user can watch progress of program
-		std::cout << "\n---------------------\n\nCurrent animal: " << currentAnimal << std::endl;
+		std::cout << "\n---------------------\n\nCurrent animal's file being created: " << currentAnimal_nospace << ".dcl" << std::endl;
 		//std::cout << "Current animal, no dash: " << currentAnimal_nodash;
 
 		//obtain all ACQ filenames containing data for the current animal	
 		fnames_animal.clear();		//clear old info first!
-		fnames_animal = getFnamesAnimal(fnames, currentAnimal, currentAnimal_nodash, leftFormat, rightFormat);
+		fnames_animal = getFnamesAnimal(fnames, currentAnimal, currentAnimal_nodash, currentAnimal_correction, leftFormat, rightFormat);
 
 		//notify user that animal's data was not found, and skip to next animal
 		if(fnames_animal.empty()) {		//if there are no ACQ files in the list for this animal
@@ -1088,7 +1090,7 @@ int main(int argc, char* argv[]) {
 		//get information necessary for writing DCL header
 		scanFreq = getScanFreq(fnames_animal);			//get scan frequency (same for all files, usually 500 Hz)
 		numDataPoints = getNumDataPoints(fnames_animal, currentAnimal, currentAnimal_nodash, leftFormat, rightFormat);	//get number of data points that will be written to DCL file
-																								//i.e. total amount of data present in all ACQ files for this animal
+																														//i.e. total amount of data present in all ACQ files for this animal
 		//write a DCL header for the DCL file
 		writeDCLHeader(dclFile, scanFreq, numDataPoints, currentAnimal, leftFormat, rightFormat, DCLFilePath);
 
@@ -1111,7 +1113,7 @@ int main(int argc, char* argv[]) {
 			//conversion from str to wchar_t for BioPAC ACQ API
 			fname_animal_str = fnames_animal.at(i);
 			//so user can see progress of program
-			std::cout << "Current file being read/written: " << fname_animal_str << std::endl;		//TODO PRINT STATEMENT NEEDS TO BE HERE??? FOR ACQ FILES TO OPEN
+			std::cout << "Current ACQ file being read: " << fname_animal_str << std::endl;		//TODO PRINT STATEMENT NEEDS TO BE HERE??? FOR ACQ FILES TO OPEN
 			fname_animal_w = stringToWchar(fname_animal_str);
 
 			//open ACQ file
