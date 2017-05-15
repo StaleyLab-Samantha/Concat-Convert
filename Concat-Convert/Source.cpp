@@ -511,11 +511,11 @@ std::vector<std::string> listAnimals(std::vector<std::string> &fnames, std::stri
 //TODO DOCUMENTATION
 //obtains a list of filenames containing data for a given animal
 
-//std::vector<std::string> getFnamesAnimal(std::vector<std::string> fnames, std::string currentAnimal, std::string currentAnimal_nodash, 
-//										 std::pair<std::string, std::string> currentAnimal_correction, std::string leftFormat, std::string rightFormat) {
+std::vector<std::string> getFnamesAnimal(std::vector<std::string> fnames, std::string currentAnimal, std::string currentAnimal_nodash, 
+										 std::pair<std::string, std::string> currentAnimal_correction, std::string leftFormat, std::string rightFormat) {
 
-std::vector<std::string> getFnamesAnimal(std::vector<std::string> fnames, std::string currentAnimal, std::pair<std::string, std::string> currentAnimal_correction, 
-										 std::string leftFormat, std::string rightFormat) {
+//std::vector<std::string> getFnamesAnimal(std::vector<std::string> fnames, std::string currentAnimal, std::pair<std::string, std::string> currentAnimal_correction, 
+//										 std::string leftFormat, std::string rightFormat) {
 	ACQFile acqFile;
 	CHInfo chInfo;
 
@@ -563,21 +563,22 @@ std::vector<std::string> getFnamesAnimal(std::vector<std::string> fnames, std::s
 				numSamples = chInfo.numSamples;
 
 				//if this file contains the animal we're looking for...
-				//if((strChannelName.compare(currentAnimal + leftFormat) == 0) || (strChannelName.compare(currentAnimal_nodash + leftFormat) == 0)  
-				//	|| (strChannelName.compare(currentAnimal + rightFormat) == 0) || (strChannelName.compare(currentAnimal_nodash + rightFormat) == 0)) {
-				//	bm_flag = true;									//set flag to true
-				//	//numDataPoints += numSamples;					//total data points = sum of all channels' data points
-				//}
-				if((strChannelName.compare(currentAnimal + leftFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + leftFormat) == 0)  
-					|| (strChannelName.compare(currentAnimal + rightFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + rightFormat) == 0)) {
+				if((strChannelName.compare(currentAnimal + leftFormat) == 0) || (strChannelName.compare(currentAnimal_nodash + leftFormat) == 0)  
+					|| (strChannelName.compare(currentAnimal + rightFormat) == 0) || (strChannelName.compare(currentAnimal_nodash + rightFormat) == 0)) {
 					bm_flag = true;									//set flag to true
 					//numDataPoints += numSamples;					//total data points = sum of all channels' data points
 				}
 
-				//else if((strChannelName.compare(currentAnimal_correction.first + leftFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + rightFormat) == 0) {
+				else if((strChannelName.compare(currentAnimal_correction.first + leftFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + rightFormat) == 0)) {
+					bm_flag = true;									//set flag to true
+					//numDataPoints += numSamples;					//total data points = sum of all channels' data points
+					//return fnames_animal;
+				}
+
+				//if((strChannelName.compare(currentAnimal + leftFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + leftFormat) == 0)  
+				//	|| (strChannelName.compare(currentAnimal + rightFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + rightFormat) == 0)) {
 				//	bm_flag = true;									//set flag to true
 				//	//numDataPoints += numSamples;					//total data points = sum of all channels' data points
-				//	//return fnames_animal;
 				//}
 
 			}
@@ -624,10 +625,10 @@ int32_t getScanFreq(std::vector<std::string> fnames) {
 
 //TODO DOCUMENTATION
 //obtains the number of data points in a given animal's DCL file
-//uint64_t getNumDataPoints(std::vector<std::string> fnames, std::string currentAnimal, std::string currentAnimal_nodash, 
-//						  std::pair<std::string, std::string> currentAnimal_correction, std::string leftFormat, std::string rightFormat) {
-uint64_t getNumDataPoints(std::vector<std::string> fnames, std::string currentAnimal, std::pair<std::string, std::string> currentAnimal_correction, 
-						  std::string leftFormat, std::string rightFormat) {
+uint64_t getNumDataPoints(std::vector<std::string> fnames, std::string currentAnimal, std::string currentAnimal_nodash, 
+						  std::pair<std::string, std::string> currentAnimal_correction, std::string leftFormat, std::string rightFormat) {
+//uint64_t getNumDataPoints(std::vector<std::string> fnames, std::string currentAnimal, std::pair<std::string, std::string> currentAnimal_correction, 
+//						  std::string leftFormat, std::string rightFormat) {
 	std::string fname_str;
 	wchar_t *fname_w;
 	ACQFile acqFile;
@@ -657,15 +658,18 @@ uint64_t getNumDataPoints(std::vector<std::string> fnames, std::string currentAn
 
 				numSamples = chInfo.numSamples;
 
-				//if((strChannelName.compare(currentAnimal + leftFormat) == 0) || (strChannelName.compare(currentAnimal_nodash + leftFormat) == 0)  
-				//	|| (strChannelName.compare(currentAnimal + rightFormat) == 0) || (strChannelName.compare(currentAnimal_nodash + rightFormat) == 0)) {					
-				//	numDataPoints += numSamples;					//total data points = sum of all channels' data points
-				//}
-
-				if((strChannelName.compare(currentAnimal + leftFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + leftFormat) == 0) 
-					|| (strChannelName.compare(currentAnimal + rightFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + rightFormat) == 0)) {					
+				if((strChannelName.compare(currentAnimal + leftFormat) == 0) || (strChannelName.compare(currentAnimal_nodash + leftFormat) == 0)  
+					|| (strChannelName.compare(currentAnimal + rightFormat) == 0) || (strChannelName.compare(currentAnimal_nodash + rightFormat) == 0)) {					
 					numDataPoints += numSamples;					//total data points = sum of all channels' data points
 				}
+				else if((strChannelName.compare(currentAnimal_correction.first + leftFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + rightFormat) == 0)) {
+					numDataPoints += numSamples;					//total data points = sum of all channels' data points
+				}
+
+				//if((strChannelName.compare(currentAnimal + leftFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + leftFormat) == 0) 
+				//	|| (strChannelName.compare(currentAnimal + rightFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + rightFormat) == 0)) {					
+				//	numDataPoints += numSamples;					//total data points = sum of all channels' data points
+				//}
 
 				//adding this part in causes issues! apparent multiple-counting of amount of data, file-size goes from 3 segs to 15 segs w/o any additional data.
 				//multi-counting even applies to BM-15, which does not require a correction!
@@ -1100,8 +1104,8 @@ int main(int argc, char* argv[]) {
 
 		//obtain all ACQ filenames containing data for the current animal	
 		fnames_animal.clear();		//clear old info first!
-		//fnames_animal = getFnamesAnimal(fnames, currentAnimal, currentAnimal_nodash, currentAnimal_correction, leftFormat, rightFormat);
-		fnames_animal = getFnamesAnimal(fnames, currentAnimal, currentAnimal_correction, leftFormat, rightFormat);
+		fnames_animal = getFnamesAnimal(fnames, currentAnimal, currentAnimal_nodash, currentAnimal_correction, leftFormat, rightFormat);
+		//fnames_animal = getFnamesAnimal(fnames, currentAnimal, currentAnimal_correction, leftFormat, rightFormat);
 
 		//notify user that animal's data was not found, and skip to next animal
 		if(fnames_animal.empty()) {		//if there are no ACQ files in the list for this animal
@@ -1111,8 +1115,8 @@ int main(int argc, char* argv[]) {
 
 		//get information necessary for writing DCL header
 		scanFreq = getScanFreq(fnames_animal);			//get scan frequency (same for all files, usually 500 Hz)
-		//numDataPoints = getNumDataPoints(fnames_animal, currentAnimal, currentAnimal_nodash, currentAnimal_correction, leftFormat, rightFormat);	//get number of data points that will be written to DCL file																												
-		numDataPoints = getNumDataPoints(fnames_animal, currentAnimal, currentAnimal_correction, leftFormat, rightFormat);	//get number of data points that will be written to DCL file
+		numDataPoints = getNumDataPoints(fnames_animal, currentAnimal, currentAnimal_nodash, currentAnimal_correction, leftFormat, rightFormat);	//get number of data points that will be written to DCL file																												
+		//numDataPoints = getNumDataPoints(fnames_animal, currentAnimal, currentAnimal_correction, leftFormat, rightFormat);	//get number of data points that will be written to DCL file
 																															//i.e. total amount of data present in all ACQ files for this animal	
 		//write a DCL header for the DCL file
 		writeDCLHeader(dclFile, scanFreq, numDataPoints, currentAnimal, leftFormat, rightFormat, DCLFilePath);
@@ -1151,7 +1155,7 @@ int main(int argc, char* argv[]) {
 						wChannelName = chInfo.label;	
 						strChannelName = wcharToString(wChannelName);						
 						
-						hoursInFile = chInfo.numSamples/(500*60*60);
+						hoursInFile = chInfo.numSamples/(scanFreq*60.0*60.0);
 
 						//exception: BM-21(l) is paired with BM-22(r) (typo). 
 						//BM-22(r) ALWAYS immediately follows BM-21(l)
