@@ -563,23 +563,29 @@ std::vector<std::string> getFnamesAnimal(std::vector<std::string> fnames, std::s
 				numSamples = chInfo.numSamples;
 
 				//if this file contains the animal we're looking for...
-				if((strChannelName.compare(currentAnimal + leftFormat) == 0) || (strChannelName.compare(currentAnimal_nodash + leftFormat) == 0)  
-					|| (strChannelName.compare(currentAnimal + rightFormat) == 0) || (strChannelName.compare(currentAnimal_nodash + rightFormat) == 0)) {
-					bm_flag = true;									//set flag to true
-					//numDataPoints += numSamples;					//total data points = sum of all channels' data points
-				}
+				//if((strChannelName.compare(currentAnimal + leftFormat) == 0) || (strChannelName.compare(currentAnimal_nodash + leftFormat) == 0)  
+				//	|| (strChannelName.compare(currentAnimal + rightFormat) == 0) || (strChannelName.compare(currentAnimal_nodash + rightFormat) == 0)) {
+				//	bm_flag = true;									//set flag to true
+				//	//numDataPoints += numSamples;					//total data points = sum of all channels' data points
+				//}
 
-				else if((strChannelName.compare(currentAnimal_correction.first + leftFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + rightFormat) == 0)) {
-					bm_flag = true;									//set flag to true
-					//numDataPoints += numSamples;					//total data points = sum of all channels' data points
-					//return fnames_animal;
-				}
+				//else if((strChannelName.compare(currentAnimal_correction.first + leftFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + rightFormat) == 0)) {
+				//	bm_flag = true;									//set flag to true
+				//	//numDataPoints += numSamples;					//total data points = sum of all channels' data points
+				//	//return fnames_animal;
+				//}
 
 				//if((strChannelName.compare(currentAnimal + leftFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + leftFormat) == 0)  
 				//	|| (strChannelName.compare(currentAnimal + rightFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + rightFormat) == 0)) {
 				//	bm_flag = true;									//set flag to true
 				//	//numDataPoints += numSamples;					//total data points = sum of all channels' data points
 				//}
+
+				if((strChannelName.compare(currentAnimal + leftFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + leftFormat) == 0) 
+					|| (strChannelName.compare(currentAnimal + rightFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + rightFormat) == 0)) {					
+						bm_flag = true;	
+						numDataPoints += numSamples;					//total data points = sum of all channels' data points
+				}
 
 			}
 			//if this file does not have a channel representing animal BM, remove from list
@@ -658,21 +664,18 @@ uint64_t getNumDataPoints(std::vector<std::string> fnames, std::string currentAn
 
 				numSamples = chInfo.numSamples;
 
-				if((strChannelName.compare(currentAnimal + leftFormat) == 0) || (strChannelName.compare(currentAnimal_nodash + leftFormat) == 0)  
-					|| (strChannelName.compare(currentAnimal + rightFormat) == 0) || (strChannelName.compare(currentAnimal_nodash + rightFormat) == 0)) {					
-					numDataPoints += numSamples;					//total data points = sum of all channels' data points
-				}
-				else if((strChannelName.compare(currentAnimal_correction.first + leftFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + rightFormat) == 0)) {
-					numDataPoints += numSamples;					//total data points = sum of all channels' data points
-				}
-
-				//if((strChannelName.compare(currentAnimal + leftFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + leftFormat) == 0) 
-				//	|| (strChannelName.compare(currentAnimal + rightFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + rightFormat) == 0)) {					
+				//if((strChannelName.compare(currentAnimal + leftFormat) == 0) || (strChannelName.compare(currentAnimal_nodash + leftFormat) == 0)  
+				//	|| (strChannelName.compare(currentAnimal + rightFormat) == 0) || (strChannelName.compare(currentAnimal_nodash + rightFormat) == 0)) {					
+				//	numDataPoints += numSamples;					//total data points = sum of all channels' data points
+				//}
+				//else if((strChannelName.compare(currentAnimal_correction.first + leftFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + rightFormat) == 0)) {
 				//	numDataPoints += numSamples;					//total data points = sum of all channels' data points
 				//}
 
-				//adding this part in causes issues! apparent multiple-counting of amount of data, file-size goes from 3 segs to 15 segs w/o any additional data.
-				//multi-counting even applies to BM-15, which does not require a correction!
+				if((strChannelName.compare(currentAnimal + leftFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + leftFormat) == 0) 
+					|| (strChannelName.compare(currentAnimal + rightFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + rightFormat) == 0)) {					
+					numDataPoints += numSamples;					//total data points = sum of all channels' data points
+				}
 				
 
 			}
@@ -1018,6 +1021,11 @@ int main(int argc, char* argv[]) {
 	std::vector<std::pair<std::string, std::string>> animal_corrections;
 	animal_corrections = getAnimalCorrections(concatInfoFile);
 
+	//there are two ways this works
+	//	1. if user selects "All" animals, incorrect and correct animal names will be included in animal list
+	//	2. if user specifies animals, presumably only correct animal names will be included in animal list
+	//TODO all currentAnimal.first elements should be removed from animalList, as these are incorrect animal names!
+
 	//if list is empty, notify user and end program
 	if(animals.empty()) {		//if there are no ACQ files in the list
 		std::cout << "No animals were found in the provided ACQ files with the specified format.\nPlease check that the format specified is correct, and try again." << std::endl;
@@ -1035,6 +1043,14 @@ int main(int argc, char* argv[]) {
 	std::cout << "\n\nThe following is a list of corrections to make to the above animal-list:\n" << std::endl;
 	for(int i = 0; i < animal_corrections.size(); i++) {
 		std::cout << "\t" << i+1 << ". " << animal_corrections.at(i).first << " will be corrected to: " << animal_corrections.at(i).second << std::endl;
+	}
+	//remove animal-names that represent typos
+	for(int i = 0; i < animal_corrections.size(); i++) {
+		animals.erase(std::remove(animals.begin(), animals.end(), animal_corrections.at(i).first), animals.end());
+	}
+	std::cout << "\n\nThe following is the corrected animal-list:\n" << std::endl;
+	for(int i = 0; i < animals.size(); i++) {
+		std::cout << animals.at(i) << " ";
 	}
 	std::cout << "\n\nIs this correct? (Y/N)\n" << std::endl;
 	std::getline(std::cin, response);
@@ -1090,7 +1106,8 @@ int main(int argc, char* argv[]) {
 
 		//obtain user-supplied correction for current animal, if there is one
 		for(int m = 0; m < animal_corrections.size(); m++) {
-			if(currentAnimal == animal_corrections.at(m).first)
+			//if the current animal name is an error, or is associated with an error
+			if((currentAnimal == animal_corrections.at(m).first) || (currentAnimal == animal_corrections.at(m).second))
 				currentAnimal_correction = animal_corrections.at(m);
 		}
 
