@@ -1,7 +1,8 @@
 E:\StaleyBMDRIVEBackup - 3-24\Biomarkers, beginning to end\Biomarkers Files\Biomarkers Files
 F:\Concatenated DCL Files NEW
-All
+BM-12,BM17,BM-17,BM-21,BM-22,BM- 24,BM-24,BM-27
 (r)
 (l)
 BM17||BM-17
 BM-22||BM-21
+BM- 24||BM-24

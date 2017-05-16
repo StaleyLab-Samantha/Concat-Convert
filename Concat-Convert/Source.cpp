@@ -474,8 +474,8 @@ std::vector<std::string> listAnimals(std::vector<std::string> &fnames, std::stri
 		}
 
 	}
-	//remove BM-22 -- this is a typo!
-	animals.erase(std::remove(animals.begin(), animals.end(), "BM-22"), animals.end());
+	//remove BM-22 -- this is a typo! //REMOVING REMOVAL OF BM-22!
+	//animals.erase(std::remove(animals.begin(), animals.end(), "BM-22"), animals.end());
 	return animals;
 }
 
@@ -609,20 +609,38 @@ std::vector<std::string> getFnamesAnimal(std::vector<std::string> fnames, std::s
 
 //TODO DOCUMENTATION
 //obtains the scan frequency
+
+//TODO: need to fix this! If file is broken, this will not work! Look through all files, break out of loop once a
+//valid scanFreq value is found
 int32_t getScanFreq(std::vector<std::string> fnames) {
 	std::string fname_str;
 	wchar_t *fname_w;
 	ACQFile acqFile;
 	int32_t scanFreq;
 
-	//pick any of the ACQ files (picking the first one for convenience)
-	fname_str = fnames.at(0);
-	fname_w = stringToWchar(fname_str);		
+	////pick any of the ACQ files (picking the first one for convenience)
+	//fname_str = fnames.at(0);
+	//fname_w = stringToWchar(fname_str);		
 
-	if(initACQFile(fname_w, &acqFile))	{
-		scanFreq = 1000.0/acqFile.sampleRate;		 			//Conversion from msec/sample to samples/sec (Hz).
-		closeACQFile(&acqFile);
+	//if(initACQFile(fname_w, &acqFile))	{
+	//	scanFreq = 1000.0/acqFile.sampleRate;		 			//Conversion from msec/sample to samples/sec (Hz).
+	//	closeACQFile(&acqFile);
+	//}
+
+	for(int i=0; i < fnames.size(); i++) {
+		//pick any of the ACQ files (picking the first one for convenience)
+		fname_str = fnames.at(i);
+		fname_w = stringToWchar(fname_str);		
+
+		if(initACQFile(fname_w, &acqFile))	{
+			scanFreq = 1000.0/acqFile.sampleRate;		 			//Conversion from msec/sample to samples/sec (Hz).
+			closeACQFile(&acqFile);
+
+			if(scanFreq > 0)	//if we have a valid scan frequency, break out of loop, return
+				break;
+		}
 	}
+
 
 	return scanFreq;
 
@@ -990,6 +1008,10 @@ int main(int argc, char* argv[]) {
 		return 0;
 	}
 
+	//TODO show user the paths they entered -- are these paths correct?
+
+	//TODO warn user if there are already DCL files in the concat-output folder
+
 	//Notify user that a list of animals is being obtained. If there are many files, this may take a couple of minutes.
 	std::cout << "\nObtaining a list of animals (without corrections). If you have a large number of ACQ files, this may take a couple of minutes...\n" << std::endl;
 	
@@ -1036,6 +1058,7 @@ int main(int argc, char* argv[]) {
 	//provide the user with the list of animals to be concatenated, confirm that this is correct.
 	std::cout << "\n---------------------\n" << std::endl;
 	std::cout << "Animal-finding complete! The following is a list of the animals you wish to concatenate (without corrections):\n" << std::endl;
+	std::sort(animals.begin(), animals.end());		//sorting list of animals before displaying
 	for(int i = 0; i < animals.size(); i++) {
 		std::cout << animals.at(i) << " ";
 	}
@@ -1048,6 +1071,11 @@ int main(int argc, char* argv[]) {
 	for(int i = 0; i < animal_corrections.size(); i++) {
 		animals.erase(std::remove(animals.begin(), animals.end(), animal_corrections.at(i).first), animals.end());
 	}
+	//TODO ADD ANIMAL NAMES IF CORRECTION ISN'T PRESENT!!
+	//sort after removal-replacing
+	std::sort(animals.begin(), animals.end());
+
+	//show corrected list to user, ask if it's correct
 	std::cout << "\n\nThe following is the corrected animal-list:\n" << std::endl;
 	for(int i = 0; i < animals.size(); i++) {
 		std::cout << animals.at(i) << " ";
@@ -1085,6 +1113,7 @@ int main(int argc, char* argv[]) {
 		Sleep(3000);
 		return 0;
 	}
+
 	
 	//tell user they can leave, since all user-input has finished
 	std::cout << "\nConcatenation started -- this process may take a few hours. No further input is required. ";
@@ -1174,6 +1203,8 @@ int main(int argc, char* argv[]) {
 						
 						hoursInFile = chInfo.numSamples/(scanFreq*60.0*60.0);
 
+						//TODO REMOVE BM-21/BM-22 EXCEPTION
+
 						//exception: BM-21(l) is paired with BM-22(r) (typo). 
 						//BM-22(r) ALWAYS immediately follows BM-21(l)
 						//therefore index of BM-22(r) will always be 1 greater than index of BM-21(l)
@@ -1237,6 +1268,16 @@ int main(int argc, char* argv[]) {
 
 	//TODO concatenation-is-complete message
 	//TODO user presses "quit" or something, then return, so that user can see output...?
-	return 0;
+
+	std::cout << "\n\nPROCESS COMPLETE. Press \"Q\" to quit.\n" << std::endl;
+	std::getline(std::cin, response);
+
+	//if user answers that list is not correct, end concatenation and notify the user.
+	if(icompare(response, "q") || icompare(response, "quit")) {	//if response is N/n/no/NO/No/nO
+		std::cout << "Concatenation finished. Quitting program..." << std::endl;
+		Sleep(3000);	//give user time to see message
+		return 0;
+	}
+	//return 0;
 
 }
