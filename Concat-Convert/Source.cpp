@@ -961,9 +961,11 @@ int main(int argc, char* argv[]) {
 	int channelsCount = 1;							//must be at least one channel in file
 	uint64_t numDataPoints = 0;						//total number of data points in DCL file being created
 
-	double hoursInFile;								//number of hours of a particular animal's data in a given file.
+	double hoursInACQFile;							//number of hours of a particular animal's data in a given file.
 													//Stored in text file accompanying each DCL, so user knows how much
 													//of DCL data comes from each ACQ file
+
+	double totalHoursInDCL;							//total number of hours in the DCL file
 	
 	bool bm_flag = false;							//flag indicates if a particular ACQ file contains data for the
 													//current animal
@@ -1002,11 +1004,20 @@ int main(int argc, char* argv[]) {
 	//concatInfoFile.open("C:\\Users\\sk430\\Documents\\Visual Studio 2012\\Projects\\Concat-Convert\\Release\\concat_info.txt", std::ifstream::in);
 	concatInfoFile.open(concatInfoFilePath, std::ifstream::in);
 	if(!concatInfoFile) {	//if stream has failed, notify user that they provided an incorrect path.
-		std::cout << "Failed to open file at: " << concatInfoFilePath << ".\nCheck that the path provided is correct, and try again." << std::endl;
-		//TOOD press key to quit?
-		Sleep(3000);
-		return 0;
+		std::cout << "Failed to open file at: " << concatInfoFilePath << ".\nCheck that the path provided is correct. Press \"Ctrl-C\" or \"Q\" to quit, and try again." << std::endl;
+		//TODO press any key to quit?
+		std::getline(std::cin, response);
+
+		//if user answers that list is not correct, end concatenation and notify the user.
+		if(icompare(response, "q") || icompare(response, "quit")) {	//if response is N/n/no/NO/No/nO
+			std::cout << "\nQuitting program..." << std::endl;
+			Sleep(3000);	//give user time to see message
+			return 0;
+		}
 	}
+
+	//TODO put all output in a log file
+	//add time elapsed too, for each file?
 
 	//TODO show user the paths they entered -- are these paths correct?
 
@@ -1025,9 +1036,16 @@ int main(int argc, char* argv[]) {
 
 	//check if there are ACQ files
 	if(unsorted.empty()) {		//if there are no ACQ files in the list
-		std::cout << "Either the selected ACQ directory is invalid, or there are no ACQ files in the selected directory.\nPlease try again." << std::endl;
-		Sleep(3000);
-		return 0;
+		std::cout << "Either the selected ACQ directory is invalid, or there are no ACQ files in the selected directory.\nPress \"Ctrl-C\" or \"Q\" to quit, and try again." << std::endl;
+		//TODO press key to quit
+		std::getline(std::cin, response);
+
+		//if user answers that list is not correct, end concatenation and notify the user.
+		if(icompare(response, "q") || icompare(response, "quit")) {	//if response is N/n/no/NO/No/nO
+			std::cout << "\nQuitting program..." << std::endl;
+			Sleep(3000);	//give user time to see message
+			return 0;
+		}		
 	}
 
 	//read next two lines of concat-info file, to determine which animals' data will be concatenated
@@ -1050,9 +1068,16 @@ int main(int argc, char* argv[]) {
 
 	//if list is empty, notify user and end program
 	if(animals.empty()) {		//if there are no ACQ files in the list
-		std::cout << "No animals were found in the provided ACQ files with the specified format.\nPlease check that the format specified is correct, and try again." << std::endl;
-		Sleep(3000);
-		return 0;
+		std::cout << "No animals were found in the provided ACQ files with the specified format.\nPress \"Ctrl-C\" or \"Q\" to quit, and try again." << std::endl;
+		//TODO press key to quit
+		std::getline(std::cin, response);
+
+		//if user answers that list is not correct, end concatenation and notify the user.
+		if(icompare(response, "q") || icompare(response, "quit")) {	//if response is N/n/no/NO/No/nO
+			std::cout << "\nQuitting program..." << std::endl;
+			Sleep(3000);	//give user time to see message
+			return 0;
+		}
 	}
 
 	//provide the user with the list of animals to be concatenated, confirm that this is correct.
@@ -1109,9 +1134,16 @@ int main(int argc, char* argv[]) {
 		fnames = sortACQFilesAlphabetical(unsorted);	//USE THIS to sort alphabetically. TODO TEST
 	else
 	{
-		std::cout << "Invalid input for sorting method.\nPlease try again." << std::endl;
-		Sleep(3000);
-		return 0;
+		std::cout << "Invalid input for sorting method.\nPress \"Ctrl-C\" or \"Q\" to quit, and try again." << std::endl;
+		//TODO press key to quit
+		std::getline(std::cin, response);
+
+		//if user answers that list is not correct, end concatenation and notify the user.
+		if(icompare(response, "q") || icompare(response, "quit")) {	//if response is N/n/no/NO/No/nO
+			std::cout << "\nQuitting program..." << std::endl;
+			Sleep(3000);	//give user time to see message
+			return 0;
+		}
 	}
 
 	
@@ -1180,6 +1212,7 @@ int main(int argc, char* argv[]) {
 		//creating stream for DCL-info text file. Contains information about which hours of data came from which ACQ file.
 		std::string DCLInfoFileName = DCLFilePath + "\\" + currentAnimal_nospace + "_info.txt";
 		std::ofstream dclInfoFile(DCLInfoFileName);
+		totalHoursInDCL = 0;
 
 		//for each of the filenames containing BM animal's data, write the relevant animal's data to the new DCL file.
 		for(int i = 0; i < fnames_animal.size(); i++) {
@@ -1201,29 +1234,40 @@ int main(int argc, char* argv[]) {
 						wChannelName = chInfo.label;	
 						strChannelName = wcharToString(wChannelName);						
 						
-						hoursInFile = chInfo.numSamples/(scanFreq*60.0*60.0);
+						hoursInACQFile = chInfo.numSamples/(scanFreq*60.0*60.0);
+						totalHoursInDCL += hoursInACQFile;
 
+
+						/*
 						//TODO REMOVE BM-21/BM-22 EXCEPTION
 
 						//exception: BM-21(l) is paired with BM-22(r) (typo). 
 						//BM-22(r) ALWAYS immediately follows BM-21(l)
 						//therefore index of BM-22(r) will always be 1 greater than index of BM-21(l)
-						if(strChannelName.compare("BM-21(l)") == 0) {
-							chindex_left = j;
-							chindex_right = j+1;
-						} else if(strChannelName.compare("BM-22(r)") == 0) {
-							//do nothing
-						} else {     //for all other animals, search for the appropriate channels
-							//if( (strChannelName.compare(currentAnimal + "(l)") == 0) || (strChannelName.compare(currentAnimal_nodash + "(l)") == 0)  ) chindex_left = j;
-							//else if( (strChannelName.compare(currentAnimal + "(r)") == 0 ) || (strChannelName.compare(currentAnimal_nodash + "(r)") == 0) ) chindex_right = j;
-							if( (strChannelName.compare(currentAnimal + leftFormat) == 0) || (strChannelName.compare(currentAnimal_nodash + leftFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + leftFormat) == 0) ) chindex_left = j;
-							else if( (strChannelName.compare(currentAnimal + rightFormat) == 0 ) || (strChannelName.compare(currentAnimal_nodash + rightFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + rightFormat) == 0) ) chindex_right = j;
-						}
+						*/
+						//if(strChannelName.compare("BM-21(l)") == 0) {
+						//	chindex_left = j;
+						//	chindex_right = j+1;
+						//} else if(strChannelName.compare("BM-22(r)") == 0) {
+						//	//do nothing
+						//} else {     //for all other animals, search for the appropriate channels
+						//	//if( (strChannelName.compare(currentAnimal + "(l)") == 0) || (strChannelName.compare(currentAnimal_nodash + "(l)") == 0)  ) chindex_left = j;
+						//	//else if( (strChannelName.compare(currentAnimal + "(r)") == 0 ) || (strChannelName.compare(currentAnimal_nodash + "(r)") == 0) ) chindex_right = j;
+						//	if( (strChannelName.compare(currentAnimal + leftFormat) == 0) || (strChannelName.compare(currentAnimal_nodash + leftFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + leftFormat) == 0) ) chindex_left = j;
+						//	else if( (strChannelName.compare(currentAnimal + rightFormat) == 0 ) || (strChannelName.compare(currentAnimal_nodash + rightFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + rightFormat) == 0) ) chindex_right = j;
+						//}
+
+						//if( (strChannelName.compare(currentAnimal + "(l)") == 0) || (strChannelName.compare(currentAnimal_nodash + "(l)") == 0)  ) chindex_left = j;
+						//else if( (strChannelName.compare(currentAnimal + "(r)") == 0 ) || (strChannelName.compare(currentAnimal_nodash + "(r)") == 0) ) chindex_right = j;
+						if( (strChannelName.compare(currentAnimal + leftFormat) == 0) || (strChannelName.compare(currentAnimal_nodash + leftFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + leftFormat) == 0) ) chindex_left = j;
+						else if( (strChannelName.compare(currentAnimal + rightFormat) == 0 ) || (strChannelName.compare(currentAnimal_nodash + rightFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + rightFormat) == 0) ) chindex_right = j;
+						
+
 
 					}
 				}
 				//write file info to DCL info file (text file)
-				dclInfoFile << fname_animal_str.substr(fname_animal_str.find_last_of("/\\")+1) + ": " + std::to_string(hoursInFile) + " hours. \n";
+				dclInfoFile << fname_animal_str.substr(fname_animal_str.find_last_of("/\\")+1) + ": " + std::to_string(hoursInACQFile) + " hours. \n";
 
 				//number of points in one of the channels being read
 				int numPointsPerChannel = chInfo.numSamples;
@@ -1253,6 +1297,9 @@ int main(int argc, char* argv[]) {
 			}
 		}
 
+		//write to info file about 
+		dclInfoFile << "\n\nTOTAL AMOUNT OF DATA IN FILE: " + std::to_string(totalHoursInDCL) + " hours. \n";
+
 		const int32_t timestampCount = 0;	//timestamps appear to be made up of 2 numbers
 		dclFile.write((char*)&timestampCount, sizeof(int32_t));
 
@@ -1269,12 +1316,12 @@ int main(int argc, char* argv[]) {
 	//TODO concatenation-is-complete message
 	//TODO user presses "quit" or something, then return, so that user can see output...?
 
-	std::cout << "\n\nPROCESS COMPLETE. Press \"Q\" to quit.\n" << std::endl;
+	std::cout << "\n\nPROCESS COMPLETE. Press \"Ctrl-C\" or \"Q\" to quit.\n" << std::endl;
 	std::getline(std::cin, response);
 
 	//if user answers that list is not correct, end concatenation and notify the user.
 	if(icompare(response, "q") || icompare(response, "quit")) {	//if response is N/n/no/NO/No/nO
-		std::cout << "Concatenation finished. Quitting program..." << std::endl;
+		std::cout << "\nQuitting program..." << std::endl;
 		Sleep(3000);	//give user time to see message
 		return 0;
 	}
