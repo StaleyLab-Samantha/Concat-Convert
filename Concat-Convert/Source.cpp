@@ -965,7 +965,7 @@ int main(int argc, char* argv[]) {
 													//Stored in text file accompanying each DCL, so user knows how much
 													//of DCL data comes from each ACQ file
 
-	double totalHoursInDCL;							//total number of hours in the DCL file
+	//double totalHoursInDCL;							//total number of hours in the DCL file
 	
 	bool bm_flag = false;							//flag indicates if a particular ACQ file contains data for the
 													//current animal
@@ -1089,6 +1089,7 @@ int main(int argc, char* argv[]) {
 	}
 	//getting corrections, show them to user
 	std::cout << "\n\nThe following is a list of corrections to make to the above animal-list:\n" << std::endl;
+	//TODO if no corrections, print "no corrections"
 	for(int i = 0; i < animal_corrections.size(); i++) {
 		std::cout << "\t" << i+1 << ". " << animal_corrections.at(i).first << " will be corrected to: " << animal_corrections.at(i).second << std::endl;
 	}
@@ -1212,7 +1213,7 @@ int main(int argc, char* argv[]) {
 		//creating stream for DCL-info text file. Contains information about which hours of data came from which ACQ file.
 		std::string DCLInfoFileName = DCLFilePath + "\\" + currentAnimal_nospace + "_info.txt";
 		std::ofstream dclInfoFile(DCLInfoFileName);
-		totalHoursInDCL = 0;
+		//totalHoursInDCL = 0;
 
 		//for each of the filenames containing BM animal's data, write the relevant animal's data to the new DCL file.
 		for(int i = 0; i < fnames_animal.size(); i++) {
@@ -1235,7 +1236,7 @@ int main(int argc, char* argv[]) {
 						strChannelName = wcharToString(wChannelName);						
 						
 						hoursInACQFile = chInfo.numSamples/(scanFreq*60.0*60.0);
-						totalHoursInDCL += hoursInACQFile;
+						//totalHoursInDCL += hoursInACQFile;
 
 
 						/*
@@ -1298,7 +1299,7 @@ int main(int argc, char* argv[]) {
 		}
 
 		//write to info file about 
-		dclInfoFile << "\n\nTOTAL AMOUNT OF DATA IN FILE: " + std::to_string(totalHoursInDCL) + " hours. \n";
+		dclInfoFile << "\n\nTOTAL AMOUNT OF DATA IN FILE: " + std::to_string(numDataPoints/(500.0*60*60*2)) + " hours. \n";
 
 		const int32_t timestampCount = 0;	//timestamps appear to be made up of 2 numbers
 		dclFile.write((char*)&timestampCount, sizeof(int32_t));
