@@ -745,10 +745,18 @@ void writeDCLHeader(std::fstream &file, int32_t &scanFreq, uint64_t &numDataPoin
 	std::string leftChannelName;
 	std::string rightChannelName;
 
+	//OLD -- specific to BM dataset only!
 	//leftChannelName = animal + "(l)";
 	//rightChannelName = animal + "(r)";
-	leftChannelName = animal + leftFormat;
-	rightChannelName = animal + rightFormat;
+
+	//For a channel-name identical to the channel-names in the ACQ input files. 
+	//leftChannelName = animal + leftFormat;
+	//rightChannelName = animal + rightFormat;
+
+	//For a channel name consisting of just leftFormat/rightFormat
+	//Necessary if you want to blind the files afterward!
+	leftChannelName = leftFormat;
+	rightChannelName = rightFormat;
 	const char* channelNames[2] = {leftChannelName.c_str(), rightChannelName.c_str()};
 	int nameLens[2] = {leftChannelName.length() + 1, rightChannelName.length() + 1};		//+1 accounts for null character
 
