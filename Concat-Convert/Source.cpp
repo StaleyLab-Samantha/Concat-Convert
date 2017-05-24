@@ -953,7 +953,7 @@ int main(int argc, char* argv[]) {
 	//filestream objects and ACQ file handles
 	ACQFile acqFile;
 	std::fstream dclFile;
-	std::ofstream dclInfoFile;
+	std::ofstream dclInfoFile, logFile;
 	std::ifstream concatInfoFile;
 	//std::fstream brokenFilesList;
 
@@ -972,8 +972,6 @@ int main(int argc, char* argv[]) {
 	double hoursInACQFile;							//number of hours of a particular animal's data in a given file.
 													//Stored in text file accompanying each DCL, so user knows how much
 													//of DCL data comes from each ACQ file
-
-	//double totalHoursInDCL;							//total number of hours in the DCL file
 	
 	bool bm_flag = false;							//flag indicates if a particular ACQ file contains data for the
 													//current animal
@@ -1002,55 +1000,95 @@ int main(int argc, char* argv[]) {
 	std::cout << "This script will concatenate ACQ files, and convert them to DCL files.\nBe sure to complete a concatenation-info text file before proceeding.";
 	std::cout << "Press Ctrl-C at any point to stop this script.\n" << std::endl;
 
-	//TODO: create log file after program ends, indicating errors, etc. ? Write to DCLFilePath
-
-	////Prompt user for path where concat_info file is located
+	//Prompt user for path where concat_info file is located
  	std::cout << "Enter the full path where your concatenation-info text file is located, including the file name.\nThis path should be of the form C:\\...\\...\\concat_info.txt: \n" << std::endl;
 	std::getline(std::cin, concatInfoFilePath);
 
 	//make sure that the path the user provided is valid! If not, exit.
-	//concatInfoFile.open("C:\\Users\\sk430\\Documents\\Visual Studio 2012\\Projects\\Concat-Convert\\Release\\concat_info.txt", std::ifstream::in);
 	concatInfoFile.open(concatInfoFilePath, std::ifstream::in);
 	if(!concatInfoFile) {	//if stream has failed, notify user that they provided an incorrect path.
 		std::cout << "Failed to open file at: " << concatInfoFilePath << ".\nCheck that the path provided is correct. Press \"Ctrl-C\" or \"Q\" to quit, and try again." << std::endl;
-		//TODO press any key to quit?
 		std::getline(std::cin, response);
 
 		//if user answers that list is not correct, end concatenation and notify the user.
-		if(icompare(response, "q") || icompare(response, "quit")) {	//if response is N/n/no/NO/No/nO
+		if(icompare(response, "q") || icompare(response, "quit")) {	
 			std::cout << "\nQuitting program..." << std::endl;
 			Sleep(3000);	//give user time to see message
 			return 0;
 		}
 	}
 
-	//TODO put all output in a log file
-	//add time elapsed too, for each file?
-
-	//TODO show user the paths they entered -- are these paths correct?
-
-	//TODO warn user if there are already DCL files in the concat-output folder
-
-	//Notify user that a list of animals is being obtained. If there are many files, this may take a couple of minutes.
-	std::cout << "\nObtaining a list of animals (without corrections). If you have a large number of ACQ files, this may take a couple of minutes...\n" << std::endl;
-	
 	//ifstream opened successfully -- obtain first two lines of concat-info text file 
 	//(path to ACQ folder and DCL folder respectively)
 	std::getline(concatInfoFile, ACQFilePath);
 	std::getline(concatInfoFile, DCLFilePath);
 
+
+	//show user the paths they entered -- are these paths correct?
+	std::cout << "ACQ-file and DCL-file paths obtained from concatenation-info file." << std::endl;
+	std::cout << "\tACQ File Path: " << ACQFilePath << std::endl;
+	std::cout << "\tDCL File Path: " << DCLFilePath << std::endl;
+	std::cout << "Are these paths correct? (Y/N)\n" << std::endl;
+	std::getline(std::cin, response);
+
+	//if user answers that paths are not correct, end concatenation and notify the user.
+	if(icompare(response, "n") || icompare(response, "no")) {	//if response is N/n/no/NO/No/nO
+		std::cout << "You indicated this information is not correct. Stopping concatenation." << std::endl;
+		Sleep(3000);	//give user time to see message
+		return 0;
+	}	
+	
+	//warn user if there are already DCL files in the concat-output folder
+	WIN32_FIND_DATA data;
+	HANDLE hFind;
+	wchar_t *path_w;
+
+	//create search-string: look for ACQ files in the given directory 
+	path_w = stringToWchar(DCLFilePath + "\\*.dcl");
+	hFind = FindFirstFile(path_w, &data);
+
+	//if at least one DCL file is found in the specified DCL output path, notify the user!
+	//they may be overwriting data with this concat.
+	if (hFind != INVALID_HANDLE_VALUE) 
+	{
+		std::cout << "\nExisting DCL files were found in the specified DCL file path." << std::endl;
+		std::cout << "Concatenation may overwrite existing DCL files and log files, and will do so without warning. \nAre you sure you wish to proceed? (Y/N)\n" << std::endl;
+		std::getline(std::cin, response);
+
+		//if user answers that paths are not correct, end concatenation and notify the user.
+		if(icompare(response, "n") || icompare(response, "no")) {	//if response is N/n/no/NO/No/nO
+			std::cout << "\nYou indicated you do not wish to proceed. Stopping concatenation." << std::endl;
+			Sleep(3000);	//give user time to see message
+			return 0;
+		}
+		FindClose(hFind);
+	} 
+
+
+	//open log-file at DCLFilePath -- same destination as DCL files and DCL-info text files
+	logFile.open(DCLFilePath + "\\concat-log-file.txt", std::ofstream::out);
+	logFile << "CONCATENATION STARTED\n\n" << std::endl;
+	logFile << "INPUTS AND SETTINGS" << std::endl;
+	logFile << "User provided the following concat-info file path: \n" << concatInfoFilePath << std::endl;
+	logFile << "\tACQ file path: \n" << ACQFilePath << std::endl;
+	logFile << "\tDCL file path: \n" << DCLFilePath << std::endl;
+
+	//Notify user that a list of animals is being obtained. If there are many files, this may take a couple of minutes.
+	std::cout << "\nObtaining a list of animals (without corrections). If you have a large number of ACQ files, this may take a couple of minutes...\n" << std::endl;
+	
 	//obtain ACQ files from specified directory
 	std::vector<std::string> unsorted = listACQFiles(ACQFilePath);
 
 	//check if there are ACQ files
 	if(unsorted.empty()) {		//if there are no ACQ files in the list
 		std::cout << "Either the selected ACQ directory is invalid, or there are no ACQ files in the selected directory.\nPress \"Ctrl-C\" or \"Q\" to quit, and try again." << std::endl;
-		//TODO press key to quit
+		logFile << "Either the selected ACQ directory is invalid, or there are no ACQ files in the selected directory.\nPress \"Ctrl-C\" or \"Q\" to quit, and try again." << std::endl;
 		std::getline(std::cin, response);
 
 		//if user answers that list is not correct, end concatenation and notify the user.
 		if(icompare(response, "q") || icompare(response, "quit")) {	//if response is N/n/no/NO/No/nO
 			std::cout << "\nQuitting program..." << std::endl;
+			logFile << "\n\nQuitting. Concatenation Unsuccessful. " << std::endl;
 			Sleep(3000);	//give user time to see message
 			return 0;
 		}		
@@ -1077,12 +1115,12 @@ int main(int argc, char* argv[]) {
 	//if list is empty, notify user and end program
 	if(animals.empty()) {		//if there are no ACQ files in the list
 		std::cout << "No animals were found in the provided ACQ files with the specified format.\nPress \"Ctrl-C\" or \"Q\" to quit, and try again." << std::endl;
-		//TODO press key to quit
 		std::getline(std::cin, response);
 
 		//if user answers that list is not correct, end concatenation and notify the user.
 		if(icompare(response, "q") || icompare(response, "quit")) {	//if response is N/n/no/NO/No/nO
 			std::cout << "\nQuitting program..." << std::endl;
+			logFile << "\n\nQuitting. Concatenation Unsuccessful. " << std::endl;
 			Sleep(3000);	//give user time to see message
 			return 0;
 		}
@@ -1091,41 +1129,72 @@ int main(int argc, char* argv[]) {
 	//provide the user with the list of animals to be concatenated, confirm that this is correct.
 	std::cout << "\n---------------------\n" << std::endl;
 	std::cout << "Animal-finding complete! The following is a list of the animals you wish to concatenate (without corrections):\n" << std::endl;
+	logFile << "Animals found in ACQ files: " << std::endl;
 	std::sort(animals.begin(), animals.end());		//sorting list of animals before displaying
 	for(int i = 0; i < animals.size(); i++) {
 		std::cout << animals.at(i) << " ";
+		logFile << animals.at(i) << " ";
 	}
 	//getting corrections, show them to user
 	std::cout << "\n\nThe following is a list of corrections to make to the above animal-list:\n" << std::endl;
-	//TODO if no corrections, print "no corrections"
-	for(int i = 0; i < animal_corrections.size(); i++) {
-		std::cout << "\t" << i+1 << ". " << animal_corrections.at(i).first << " will be corrected to: " << animal_corrections.at(i).second << std::endl;
+	logFile << "\n\nThe following is a list of corrections to make to the above animal-list:\n" << std::endl;
+	
+	if(animal_corrections.size() == 0) {  //if no corrections, print "no corrections"
+		std::cout << "\tNo corrections found." << std::endl;
+		logFile << "\tNo corrections found." << std::endl;
+	}
+	else {	//print corrections if there are any
+		for(int i = 0; i < animal_corrections.size(); i++) {
+			std::cout << "\t" << i+1 << ". " << animal_corrections.at(i).first << " will be corrected to: " << animal_corrections.at(i).second << std::endl;
+		}
 	}
 	//remove animal-names that represent typos
 	for(int i = 0; i < animal_corrections.size(); i++) {
 		animals.erase(std::remove(animals.begin(), animals.end(), animal_corrections.at(i).first), animals.end());
 	}
-	//TODO ADD ANIMAL NAMES IF CORRECTION ISN'T PRESENT!!
+
+	//for(int i = 0; i < animal_corrections.size(); i++) {
+	//	animals.erase(std::remove(animals.begin(), animals.end(), animal_corrections.at(i).first), animals.end());
+	//}
+
+	////TODO ADD ANIMAL NAMES IF CORRECTION ISN'T PRESENT!!
+	//if (std::find(animals.begin(), animals.end(), animal_corrections.at(i).second) == animals.end()) {
+	//	if(animal_corrections.at(i).second != "")	//make sure the string isn't empty!
+	//		animals.push_back(animalName);	
+	//}
 	//sort after removal-replacing
 	std::sort(animals.begin(), animals.end());
 
 	//show corrected list to user, ask if it's correct
 	std::cout << "\n\nThe following is the corrected animal-list:\n" << std::endl;
+	logFile << "The following is the corrected animal-list:" << std::endl;
 	for(int i = 0; i < animals.size(); i++) {
 		std::cout << animals.at(i) << " ";
+		logFile << animals.at(i) << " ";
 	}
 	std::cout << "\n\nIs this correct? (Y/N)\n" << std::endl;
+	logFile << "\nIs this correct? (Y/N)\n" << std::endl;
 	std::getline(std::cin, response);
+	logFile << "\tUser Response: " << response << std::endl;
 
 	//if user answers that list is not correct, end concatenation and notify the user.
 	if(icompare(response, "n") || icompare(response, "no")) {	//if response is N/n/no/NO/No/nO
-		std::cout << "You indicated this information is not correct. Stopping concatenation.\nPlease try again." << std::endl;
-		Sleep(3000);	//give user time to see message
-		return 0;
+		std::cout << "You indicated this information is not correct. Stopping concatenation.\nPress \"Ctrl-C\" or \"Q\" to quit, and try again." << std::endl;
+		logFile << "\tYou indicated this information is not correct. Stopping concatenation.\nPress \"Ctrl-C\" or \"Q\" to quit, and try again." << std::endl;
+		std::getline(std::cin, response);
+
+		//if user answers that list is not correct, end concatenation and notify the user.
+		if(icompare(response, "q") || icompare(response, "quit")) {	//if response is N/n/no/NO/No/nO
+			std::cout << "\nQuitting program..." << std::endl;
+			logFile << "\n\nQuitting. Concatenation Unsuccessful. " << std::endl;
+			Sleep(3000);	//give user time to see message
+			return 0;
+		}
 	}
 	//if user gives any other response besides some variant of "No"/"N", proceed
 
 	//allow user to choose file-sorting method
+	logFile << "User choosing file-sorting method..." << std::endl;
 	std::cout << "\nNext, choose a sorting method to sort your ACQ files by date. This is the order in which your files will be concatenated:\n";
 	std::cout << "\tOption 1: By timestamp in filename, formatted YYYY_MM_DDT_HH_MM_SS (recommended)" << std::endl;
 	std::cout << "\tOption 2: By Windows' \"Last-Modified\" time" << std::endl;
@@ -1135,21 +1204,28 @@ int main(int argc, char* argv[]) {
 
 	std::vector<std::string> fnames;	//sorted filenames
 	//sort filenames
-	if(response == "1")
+	if(response == "1") {
 		fnames = sortACQFilesTimestamp(unsorted);		//USE THIS to sort by filename's timestamp
-	else if(response == "2")
+		logFile << "\tUser selected Option 1: Sorting by Filename Timestamp (recommended)" << std::endl;
+	}
+	else if(response == "2") {
 		fnames = sortACQFilesFiletime(unsorted);		//USE THIS to sort by Windows' last-modified time
-	else if(response == "3")
+		logFile << "\tUser selected Option 2: Sorting by Windows Last-Modified Time" << std::endl;
+	}
+	else if(response == "3") {
 		fnames = sortACQFilesAlphabetical(unsorted);	//USE THIS to sort alphabetically. TODO TEST
+		logFile << "\tUser selected Option 3: Alphabetical Filename Sort (not recommended)" << std::endl;
+	}
 	else
 	{
 		std::cout << "Invalid input for sorting method.\nPress \"Ctrl-C\" or \"Q\" to quit, and try again." << std::endl;
-		//TODO press key to quit
+		logFile << "Invalid input for sorting method.\nPress \"Ctrl-C\" or \"Q\" to quit, and try again." << std::endl;
 		std::getline(std::cin, response);
 
 		//if user answers that list is not correct, end concatenation and notify the user.
 		if(icompare(response, "q") || icompare(response, "quit")) {	//if response is N/n/no/NO/No/nO
 			std::cout << "\nQuitting program..." << std::endl;
+			logFile << "\n\nQuitting. Concatenation Unsuccessful. " << std::endl;
 			Sleep(3000);	//give user time to see message
 			return 0;
 		}
@@ -1158,7 +1234,7 @@ int main(int argc, char* argv[]) {
 	
 	//tell user they can leave, since all user-input has finished
 	std::cout << "\nConcatenation started -- this process may take a few hours. No further input is required. ";
-	std::cout << "This window will close when concatenation is complete. \nA log file will be written to " << DCLFilePath  << "\n" << std::endl;
+	std::cout << "This window will close when concatenation is complete. \nA log file is being written to " << DCLFilePath  << "\n" << std::endl;
 
 	////TRUNCATING HERE FOR TESTING
 	//animals.resize(10);
@@ -1166,6 +1242,8 @@ int main(int argc, char* argv[]) {
 
 
 	//TODO CONSISTENT NAMING SCHEME: all to camelcase, no underscores!
+
+	logFile << "\n\nREADING AND WRITING" << std::endl;
 
 	//beginning concatenation
 	for(int k = 0; k < animals.size(); k++) {
@@ -1187,6 +1265,7 @@ int main(int argc, char* argv[]) {
 		
 		//print current animal so that user can watch progress of program
 		std::cout << "\n---------------------\n\nCurrent animal's file being created: " << currentAnimal_nospace << ".dcl" << std::endl;
+		logFile << "\n---------------------\n\nCurrent animal's file being created: " << currentAnimal_nospace << ".dcl" << std::endl;
 		//std::cout << "Current animal, no dash: " << currentAnimal_nodash;
 
 		//obtain all ACQ filenames containing data for the current animal	
@@ -1197,6 +1276,7 @@ int main(int argc, char* argv[]) {
 		//notify user that animal's data was not found, and skip to next animal
 		if(fnames_animal.empty()) {		//if there are no ACQ files in the list for this animal
 			std::cout << "No ACQ files containing " << currentAnimal << "'s data were found. Please check that the format specified is correct.\n"<< std::endl;
+			logFile << "No ACQ files containing " << currentAnimal << "'s data were found. Please check that the format specified is correct.\n"<< std::endl;
 			continue;					//do not execute the rest, skip to next animal
 		}
 
@@ -1229,13 +1309,17 @@ int main(int argc, char* argv[]) {
 			fname_animal_str = fnames_animal.at(i);
 			//so user can see progress of program
 			std::cout << "Current ACQ file being read: " << fname_animal_str << std::endl;		//TODO PRINT STATEMENT NEEDS TO BE HERE??? FOR ACQ FILES TO OPEN
+			logFile <<"Current ACQ file being read: " << fname_animal_str << std::endl;			//MAY 24 SAMANTHA -- WATCH OUT, MESSING WITH PRINT STATEMENT
+
 			fname_animal_w = stringToWchar(fname_animal_str);
+			
 
 			//open ACQ file
 			if(initACQFile(fname_animal_w, &acqFile)) {
 
 				//so user can see progress of program
 				std::cout << "\tFile-open successful." << std::endl;
+				logFile << "\tFile-open successful." << std::endl;
 
 				//for each channel in file, search for the animal's left/right channels.
 				for(int j = 0; j < acqFile.numChannels; j++) {
@@ -1298,11 +1382,13 @@ int main(int argc, char* argv[]) {
 				closeACQFile(&acqFile);											///CLOSING FILE
 				//so user can see progress of program
 				std::cout << "\tData-write from file is complete." << std::endl;
+				logFile << "\tData-write from file is complete." << std::endl;
 				dataCount = 1;
 			}
 			else {	//if opening ACQ file failed with BioPAC API
 				//so user can see progress of program
 				std::cout << "\tFile-open failed." << std::endl;
+				logFile << "\tFile-open failed." << std::endl;
 			}
 		}
 
@@ -1326,11 +1412,13 @@ int main(int argc, char* argv[]) {
 	//TODO user presses "quit" or something, then return, so that user can see output...?
 
 	std::cout << "\n\nPROCESS COMPLETE. Press \"Ctrl-C\" or \"Q\" to quit.\n" << std::endl;
+	logFile <<"\n\nPROCESS COMPLETE. Press \"Ctrl-C\" or \"Q\" to quit.\n" << std::endl;
 	std::getline(std::cin, response);
 
 	//if user answers that list is not correct, end concatenation and notify the user.
 	if(icompare(response, "q") || icompare(response, "quit")) {	//if response is N/n/no/NO/No/nO
 		std::cout << "\nQuitting program..." << std::endl;
+		logFile <<"\n\nQuitting program. Concatenation Successful." << std::endl;
 		Sleep(3000);	//give user time to see message
 		return 0;
 	}
