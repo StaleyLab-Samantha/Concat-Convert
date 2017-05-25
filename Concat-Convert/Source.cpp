@@ -54,6 +54,12 @@
 				Left
 			where spaces are included ONLY where indicated by [SPACE]! Do NOT place the space at the beginning of the R/L
 			designation instead.
+
+
+			TODO SAMANTHA NOTE 5/25/2017: seems that space can be placed in R/L designation, OR in animal name!
+			Continue testing to be sure
+			CONFIRMED: either will work.
+
 	 - In Lines 4/5: when specifying R/L designation
 			Note that R/L designation is CASE-SENSITIVE! Write the R/L designation EXACTLY as it appears in the channel-
 			names of the files you wish to concatenate.
@@ -997,7 +1003,7 @@ int main(int argc, char* argv[]) {
 
 
 	//Prompt user, reminding them to fill out text file. Ask if they've filled it out, exit if no.
-	std::cout << "This script will concatenate ACQ files, and convert them to DCL files.\nBe sure to complete a concatenation-info text file before proceeding.";
+	std::cout << "This script will concatenate ACQ files, and convert them to DCL files.\nBe sure to complete a concatenation-info text file before proceeding. ";
 	std::cout << "Press Ctrl-C at any point to stop this script.\n" << std::endl;
 
 	//Prompt user for path where concat_info file is located

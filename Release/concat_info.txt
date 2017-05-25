@@ -1,5 +1,6 @@
-E:\StaleyBMDRIVEBackup - 3-24\Biomarkers, beginning to end\Biomarkers Files\Biomarkers Files
-F:\Concatenated DCL Files NEW
-BM-22
-(r)
-(l)
+C:\Users\sk430\Desktop\ACQ Files\BM2_Utah
+C:\Users\sk430\Desktop\DCL Files\BM2_Utah
+All
+ Right
+ Left
+EEG-0026||EEG-026
