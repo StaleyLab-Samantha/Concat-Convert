@@ -1007,7 +1007,7 @@ int main(int argc, char* argv[]) {
 	//make sure that the path the user provided is valid! If not, exit.
 	concatInfoFile.open(concatInfoFilePath, std::ifstream::in);
 	if(!concatInfoFile) {	//if stream has failed, notify user that they provided an incorrect path.
-		std::cout << "Failed to open file at: " << concatInfoFilePath << ".\nCheck that the path provided is correct. Press \"Ctrl-C\" or \"Q\" to quit, and try again." << std::endl;
+		std::cout << "Failed to open file at: " << concatInfoFilePath << ".\nCheck that the path provided is correct. Enter \"Q\" to quit, and try again." << std::endl;
 		std::getline(std::cin, response);
 
 		//if user answers that list is not correct, end concatenation and notify the user.
@@ -1025,7 +1025,7 @@ int main(int argc, char* argv[]) {
 
 
 	//show user the paths they entered -- are these paths correct?
-	std::cout << "ACQ-file and DCL-file paths obtained from concatenation-info file." << std::endl;
+	std::cout << "\nACQ-file and DCL-file paths obtained from concatenation-info file." << std::endl;
 	std::cout << "\tACQ File Path: " << ACQFilePath << std::endl;
 	std::cout << "\tDCL File Path: " << DCLFilePath << std::endl;
 	std::cout << "Are these paths correct? (Y/N)\n" << std::endl;
@@ -1081,8 +1081,8 @@ int main(int argc, char* argv[]) {
 
 	//check if there are ACQ files
 	if(unsorted.empty()) {		//if there are no ACQ files in the list
-		std::cout << "Either the selected ACQ directory is invalid, or there are no ACQ files in the selected directory.\nPress \"Ctrl-C\" or \"Q\" to quit, and try again." << std::endl;
-		logFile << "Either the selected ACQ directory is invalid, or there are no ACQ files in the selected directory.\nPress \"Ctrl-C\" or \"Q\" to quit, and try again." << std::endl;
+		std::cout << "Either the selected ACQ directory is invalid, or there are no ACQ files in the selected directory.\nEnter \"Q\" to quit, and try again." << std::endl;
+		logFile << "Either the selected ACQ directory is invalid, or there are no ACQ files in the selected directory.\nEnter \"Q\" to quit, and try again." << std::endl;
 		std::getline(std::cin, response);
 
 		//if user answers that list is not correct, end concatenation and notify the user.
@@ -1107,14 +1107,9 @@ int main(int argc, char* argv[]) {
 	std::vector<std::pair<std::string, std::string>> animal_corrections;
 	animal_corrections = getAnimalCorrections(concatInfoFile);
 
-	//there are two ways this works
-	//	1. if user selects "All" animals, incorrect and correct animal names will be included in animal list
-	//	2. if user specifies animals, presumably only correct animal names will be included in animal list
-	//TODO all currentAnimal.first elements should be removed from animalList, as these are incorrect animal names!
-
 	//if list is empty, notify user and end program
 	if(animals.empty()) {		//if there are no ACQ files in the list
-		std::cout << "No animals were found in the provided ACQ files with the specified format.\nPress \"Ctrl-C\" or \"Q\" to quit, and try again." << std::endl;
+		std::cout << "No animals were found in the provided ACQ files with the specified format.\nEnter \"Q\" to quit, and try again." << std::endl;
 		std::getline(std::cin, response);
 
 		//if user answers that list is not correct, end concatenation and notify the user.
@@ -1149,20 +1144,27 @@ int main(int argc, char* argv[]) {
 		}
 	}
 	//remove animal-names that represent typos
-	for(int i = 0; i < animal_corrections.size(); i++) {
-		animals.erase(std::remove(animals.begin(), animals.end(), animal_corrections.at(i).first), animals.end());
-	}
-
 	//for(int i = 0; i < animal_corrections.size(); i++) {
 	//	animals.erase(std::remove(animals.begin(), animals.end(), animal_corrections.at(i).first), animals.end());
 	//}
 
-	////TODO ADD ANIMAL NAMES IF CORRECTION ISN'T PRESENT!!
-	//if (std::find(animals.begin(), animals.end(), animal_corrections.at(i).second) == animals.end()) {
-	//	if(animal_corrections.at(i).second != "")	//make sure the string isn't empty!
-	//		animals.push_back(animalName);	
-	//}
-	//sort after removal-replacing
+	//removing mistaken animal names from list, adding correct animal names (if needed)
+	std::pair<std::string, std::string> corr;
+	for(int i = 0; i < animal_corrections.size(); i++) {
+		//get a correction from the list
+		corr = animal_corrections.at(i);
+
+		//erase corr.first (ie. an animal-name typo) from the animal-list
+		animals.erase(std::remove(animals.begin(), animals.end(), corr.first), animals.end());
+
+		//if the correction for an animal isn't present in the list, add it
+		if (std::find(animals.begin(), animals.end(), corr.second) == animals.end()) {
+			if(corr.second != "")	//make sure the string isn't empty!
+				animals.push_back(corr.second);	
+		}
+	}
+
+	//sort after removal-replacing of incorrect animal names
 	std::sort(animals.begin(), animals.end());
 
 	//show corrected list to user, ask if it's correct
@@ -1179,8 +1181,8 @@ int main(int argc, char* argv[]) {
 
 	//if user answers that list is not correct, end concatenation and notify the user.
 	if(icompare(response, "n") || icompare(response, "no")) {	//if response is N/n/no/NO/No/nO
-		std::cout << "You indicated this information is not correct. Stopping concatenation.\nPress \"Ctrl-C\" or \"Q\" to quit, and try again." << std::endl;
-		logFile << "\tYou indicated this information is not correct. Stopping concatenation.\nPress \"Ctrl-C\" or \"Q\" to quit, and try again." << std::endl;
+		std::cout << "You indicated this information is not correct. Stopping concatenation.\nEnter \"Q\" to quit, and try again." << std::endl;
+		logFile << "\tYou indicated this information is not correct. Stopping concatenation.\nEnter \"Q\" to quit, and try again." << std::endl;
 		std::getline(std::cin, response);
 
 		//if user answers that list is not correct, end concatenation and notify the user.
@@ -1218,8 +1220,8 @@ int main(int argc, char* argv[]) {
 	}
 	else
 	{
-		std::cout << "Invalid input for sorting method.\nPress \"Ctrl-C\" or \"Q\" to quit, and try again." << std::endl;
-		logFile << "Invalid input for sorting method.\nPress \"Ctrl-C\" or \"Q\" to quit, and try again." << std::endl;
+		std::cout << "Invalid input for sorting method.\nEnter \"Q\" to quit, and try again." << std::endl;
+		logFile << "Invalid input for sorting method.\nEnter \"Q\" to quit, and try again." << std::endl;
 		std::getline(std::cin, response);
 
 		//if user answers that list is not correct, end concatenation and notify the user.
@@ -1411,8 +1413,8 @@ int main(int argc, char* argv[]) {
 	//TODO concatenation-is-complete message
 	//TODO user presses "quit" or something, then return, so that user can see output...?
 
-	std::cout << "\n\nPROCESS COMPLETE. Press \"Ctrl-C\" or \"Q\" to quit.\n" << std::endl;
-	logFile <<"\n\nPROCESS COMPLETE. Press \"Ctrl-C\" or \"Q\" to quit.\n" << std::endl;
+	std::cout << "\n\nPROCESS COMPLETE. Enter \"Q\" to quit.\n" << std::endl;
+	logFile <<"\n\nPROCESS COMPLETE. Enter \"Q\" to quit.\n" << std::endl;
 	std::getline(std::cin, response);
 
 	//if user answers that list is not correct, end concatenation and notify the user.
