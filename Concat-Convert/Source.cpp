@@ -435,17 +435,35 @@ std::vector<std::string> listAnimals(std::vector<std::string> &fnames, std::stri
 					wChannelName = chInfo.label;	
 					strChannelName = wcharToString(wChannelName);
 
-					//find the animal's name (e.g. BM-40, BM-51...) minus it's R/L designation
-					//std::size_t endPos = strChannelName.find("(");			//REMOVING 5/9/17
-					rEndPos = strChannelName.find(rightFormat);		//finding last index of r-designation
-					lEndPos = strChannelName.find(leftFormat);		//finding last index of l-designation
+					////find the animal's name (e.g. BM-40, BM-51...) minus it's R/L designation
+					////std::size_t endPos = strChannelName.find("(");			//REMOVING 5/9/17
+					//rEndPos = strChannelName.find(rightFormat);		//finding last index of r-designation
+					//lEndPos = strChannelName.find(leftFormat);		//finding last index of l-designation
+					////removing R/L portion, to obtain just the animal name (e.g. BM-50)
+					//if(rEndPos != std::string::npos)
+					//	animalName = strChannelName.substr(0, rEndPos);			
+					//else if(lEndPos != std::string::npos)
+					//	animalName = strChannelName.substr(0, lEndPos);	
+					////if neither can be found, then keep animalName the way it is, including whatever R/L designation it has
 
-					//removing R/L portion, to obtain just the animal name (e.g. BM-50)
-					if(rEndPos != std::string::npos)
-						animalName = strChannelName.substr(0, rEndPos);			
-					else if(lEndPos != std::string::npos)
-						animalName = strChannelName.substr(0, lEndPos);	
-					//if neither can be found, then keep animalName the way it is, including whatever R/L designation it has
+					animalName = "";
+					//if there's no R/L designation, animalName = channel name!
+					if(icompare(rightFormat, "") || icompare(leftFormat, "")) {		//ie. if rightFormat/leftFormat were listed as "None"
+						animalName = strChannelName;
+					} 
+					else {	//if there is an R/L designation in the channel name, remove it, and find the animal name
+						//find the animal's name (e.g. BM-40, BM-51...) minus it's R/L designation
+						//std::size_t endPos = strChannelName.find("(");			//REMOVING 5/9/17
+						rEndPos = strChannelName.find(rightFormat);		//finding last index of r-designation
+						lEndPos = strChannelName.find(leftFormat);		//finding last index of l-designation
+						//removing R/L portion, to obtain just the animal name (e.g. BM-50)
+
+						if(rEndPos != std::string::npos)
+							animalName = strChannelName.substr(0, rEndPos);			
+						else if(lEndPos != std::string::npos)
+							animalName = strChannelName.substr(0, lEndPos);	
+						//if neither can be found, then keep animalName the way it is, including whatever R/L designation it has
+					}
 					
 					//if animal isn't already in the animal name list, add it. 	
 					if (std::find(animals.begin(), animals.end(), animalName) == animals.end()) {
@@ -761,8 +779,21 @@ void writeDCLHeader(std::fstream &file, int32_t &scanFreq, uint64_t &numDataPoin
 
 	//For a channel name consisting of just leftFormat/rightFormat
 	//Necessary if you want to blind the files afterward!
-	leftChannelName = leftFormat;
-	rightChannelName = rightFormat;
+	//leftChannelName = leftFormat;
+	//rightChannelName = rightFormat;
+
+	leftChannelName = "";
+	rightChannelName = "";
+	if(icompare(leftFormat, "") || icompare(rightFormat, "")) {
+		leftChannelName = "First";
+		rightChannelName = "Second";
+
+	} 
+	else {
+		leftChannelName = leftFormat;
+		rightChannelName = rightFormat;
+
+	}
 	const char* channelNames[2] = {leftChannelName.c_str(), rightChannelName.c_str()};
 	int nameLens[2] = {leftChannelName.length() + 1, rightChannelName.length() + 1};		//+1 accounts for null character
 
@@ -1105,6 +1136,33 @@ int main(int argc, char* argv[]) {
 	std::getline(concatInfoFile, rightFormat);			//format of right-channel designation
 	std::getline(concatInfoFile, leftFormat);			//format of left-channel designation
 
+	if(icompare(leftFormat, "None") && icompare(rightFormat, "None")) {
+		std::cout << "You have indicated that there are no right/left designations for this dataset. \nInstead, these channels will be labeled \"First\" and \"Second\". \n";
+		rightFormat = "";
+		leftFormat = "";
+	} 
+	else if (icompare(leftFormat, "None") || icompare(rightFormat, "None")) {
+		std::cout << "You have indicated an incorrect right/left designation pattern. ";
+		std::cout << "Both channels may have an R/L designation, or neither channel may have an R/L designation. \n";
+		std::cout << "You may not enter \"None\" for one channel and a R/L designation for the other.\n";
+		logFile << "\n\nQuitting. You may not enter \"None\" for one channel and a R/L designation for the other.\n";
+
+		std::cout << "\nEnter \"Q\" to quit, and try again." << std::endl;
+		std::getline(std::cin, response);
+
+		if(icompare(response, "q") || icompare(response, "quit")) {	
+			std::cout << "\nQuitting program..." << std::endl;
+			logFile << "\n\nQuitting. Concatenation Unsuccessful. " << std::endl;
+			Sleep(3000);	//give user time to see message
+			return 0;
+		}
+
+	}
+	else {
+		std::cout << "Right-channel designation: " << rightFormat << std::endl;
+		std::cout << "Left-channel designation: " << leftFormat << std::endl;
+	}
+
 	//preparing to sort through animal data present in files, and separate files by
 	//which animals' data they contain.
 	std::vector<std::string> animals = listAnimals(unsorted, animalsFromFile, rightFormat, leftFormat);//, DCLFilePath);		//obtain a list of animals in the ACQ files
@@ -1306,6 +1364,9 @@ int main(int argc, char* argv[]) {
 		int chindex_left;
 		int chindex_right;
 
+		//for when left/right isn't known
+		std::vector<int> chindices;
+
 		//creating stream for DCL-info text file. Contains information about which hours of data came from which ACQ file.
 		std::string DCLInfoFileName = DCLFilePath + "\\" + currentAnimal_nospace + "_info.txt";
 		std::ofstream dclInfoFile(DCLInfoFileName);
@@ -1360,9 +1421,30 @@ int main(int argc, char* argv[]) {
 
 						//if( (strChannelName.compare(currentAnimal + "(l)") == 0) || (strChannelName.compare(currentAnimal_nodash + "(l)") == 0)  ) chindex_left = j;
 						//else if( (strChannelName.compare(currentAnimal + "(r)") == 0 ) || (strChannelName.compare(currentAnimal_nodash + "(r)") == 0) ) chindex_right = j;
-						if( (strChannelName.compare(currentAnimal + leftFormat) == 0) || (strChannelName.compare(currentAnimal_nodash + leftFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + leftFormat) == 0) ) chindex_left = j;
-						else if( (strChannelName.compare(currentAnimal + rightFormat) == 0 ) || (strChannelName.compare(currentAnimal_nodash + rightFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + rightFormat) == 0) ) chindex_right = j;
 						
+						//BEFORE "NONE" R/L DESIGNATION
+						//if( (strChannelName.compare(currentAnimal + leftFormat) == 0) || (strChannelName.compare(currentAnimal_nodash + leftFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + leftFormat) == 0) ) chindex_left = j;
+						//else if( (strChannelName.compare(currentAnimal + rightFormat) == 0 ) || (strChannelName.compare(currentAnimal_nodash + rightFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + rightFormat) == 0) ) chindex_right = j;						
+						
+						
+						if (icompare(rightFormat, "") || icompare(leftFormat, "")) {
+							if( (strChannelName.compare(currentAnimal) == 0) || (strChannelName.compare(currentAnimal_nodash) == 0) || (strChannelName.compare(currentAnimal_correction.first) == 0) ) {
+								//chindex_left = j;
+								//chindex_right = j+1;
+
+								chindices.push_back(j);
+								if(chindices.size() == 2) {
+									std::sort(chindices.begin(), chindices.end());	//sort indices to see which is bigger/smaller
+									chindex_right = chindices.at(0);				//the smaller of the two, i.e. odd-numbered
+									chindex_left = chindices.at(1);
+								}
+							}
+
+						}
+						else {
+							if( (strChannelName.compare(currentAnimal + leftFormat) == 0) || (strChannelName.compare(currentAnimal_nodash + leftFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + leftFormat) == 0) ) chindex_left = j;
+							else if( (strChannelName.compare(currentAnimal + rightFormat) == 0 ) || (strChannelName.compare(currentAnimal_nodash + rightFormat) == 0) || (strChannelName.compare(currentAnimal_correction.first + rightFormat) == 0) ) chindex_right = j;
+						}
 
 
 					}

@@ -1,6 +1,5 @@
 C:\Users\sk430\Desktop\ACQ Files\BM2_Utah
 C:\Users\sk430\Desktop\DCL Files\BM2_Utah
 All
- Right
- Left
-EEG-0026||EEG-026
+None
+None
