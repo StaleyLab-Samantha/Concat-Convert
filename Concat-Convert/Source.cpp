@@ -1435,8 +1435,10 @@ int main(int argc, char* argv[]) {
 								chindices.push_back(j);
 								if(chindices.size() == 2) {
 									std::sort(chindices.begin(), chindices.end());	//sort indices to see which is bigger/smaller
-									chindex_right = chindices.at(0);				//the smaller of the two, i.e. odd-numbered
-									chindex_left = chindices.at(1);
+									//chindex_right = chindices.at(0);				//the smaller of the two, i.e. even-numbered
+									//chindex_left = chindices.at(1);
+									chindex_left = chindices.at(0);				
+									chindex_right = chindices.at(1);
 								}
 							}
 
